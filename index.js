@@ -34,7 +34,14 @@ client.on('message', clientMessage => {
 
     if(command === "help"){
         clientMessage.channel.send("Command list sent to direct messages");
-        clientMessage.author.send("--help : view command list\n--subscribe <stream> : subscribe to a notification stream\n--unsubscribe <stream> : unsubscribe from a notification stream");
+        var helpRichEmbed = new Discord.RichEmbed();
+        helpRichEmbed.setTitle("Here is a list of commands:");
+        helpRichEmbed.addField("--help","sends a list of commands", true);
+        helpRichEmbed.addField("--subscribe <stream>","subscribes to a notification stream", true);
+        helpRichEmbed.addField("--unsubscribe <stream>","unsubscribes from a notification stream", true);
+        helpRichEmbed.setColor('GREEN');
+
+        clientMessage.author.send(helpRichEmbed);
     }else if(command === "subscribe"){
         //subscribe to a notification stream
         if(args.length === 2){

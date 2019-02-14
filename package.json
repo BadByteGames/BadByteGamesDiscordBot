@@ -1,0 +1,25 @@
+{
+  "name": "badbytegamesdiscordbot",
+  "version": "1.0.0",
+  "description": "A discord bot for the bad byte games server",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BadByteGames/BadByteGamesDiscordBot.git"
+  },
+  "keywords": [
+    "discord"
+  ],
+  "author": "Robert White",
+  "license": "SEE LICENSE IN LICENSE",
+  "bugs": {
+    "url": "https://github.com/BadByteGames/BadByteGamesDiscordBot/issues"
+  },
+  "homepage": "https://github.com/BadByteGames/BadByteGamesDiscordBot#readme",
+  "dependencies": {
+    "discord.js": "^11.4.2"
+  }
+}

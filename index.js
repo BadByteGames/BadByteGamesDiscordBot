@@ -38,6 +38,10 @@ client.on('message', clientMessage => {
         clientMessage.channel.send("die");
     }
 
+    if(msg === "no u"){
+        clientMessage.channel.sendFile("https://i.imgur.com/3WDcYbV.png");
+    }
+
     //%10 chance to reply with a friendly message to NoiseGenerator
     if(clientMessage.author.id === "345633153781596160" && Math.floor(Math.random()*10) == 7){
         messages = FriendlyMessages.friendly;

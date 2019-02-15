@@ -27,11 +27,17 @@ client.on('message', clientMessage => {
         });
     }
 
-    //send swastika if no u in german
+    //send swastika if no u in german with a 1/5 chance
     if(msg.toLocaleLowerCase() === "nein du"){
-        clientMessage.channel.send({
-            files:["https://upload.wikimedia.org/wikipedia/commons/thumb/a/a8/Flag_of_German_Reich_1935%E2%80%931945_%28reverse%29.svg/1200px-Flag_of_German_Reich_1935%E2%80%931945_%28reverse%29.svg.png"]
-        });
+        if(Math.floor(Math.random()*5) === 3){
+            clientMessage.channel.send({
+                files:["https://upload.wikimedia.org/wikipedia/commons/thumb/a/a8/Flag_of_German_Reich_1935%E2%80%931945_%28reverse%29.svg/1200px-Flag_of_German_Reich_1935%E2%80%931945_%28reverse%29.svg.png"]
+            });
+        }else{
+            clientMessage.channel.send({
+                files:["https://i.imgur.com/3WDcYbV.png"]
+            });
+        }
     }
 
     //%10 chance to reply with a friendly message to NoiseGenerator

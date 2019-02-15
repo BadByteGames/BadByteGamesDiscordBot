@@ -38,8 +38,11 @@ client.on('message', clientMessage => {
         clientMessage.channel.send("die");
     }
 
+    //send uno reverse card
     if(msg === "no u"){
-        clientMessage.channel.sendFile("https://i.imgur.com/3WDcYbV.png");
+        clientMessage.channel.send({
+            files:["https://i.imgur.com/3WDcYbV.png"]
+        });
     }
 
     //%10 chance to reply with a friendly message to NoiseGenerator
@@ -47,6 +50,13 @@ client.on('message', clientMessage => {
         messages = FriendlyMessages.friendly;
 
         clientMessage.channel.send(messages[Math.floor(Math.random()*messages.length)]);
+    }
+
+    //%0.1 chance to destroy somebody
+    if(Math.floor(Math.random()*1000) === 666){
+        clientMessage.channel.send({
+            files:["https://i.kym-cdn.com/photos/images/newsfeed/001/315/902/034.png"]
+        });
     }
 
     //%10 chance to say a dad joke

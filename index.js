@@ -164,6 +164,16 @@ client.on('message', clientMessage => {
     }else if(command === "ping"){
         //calculate the time it takes to recieve the message in ms
         clientMessage.channel.send(`Pong! Message recieved in ${(client.readyTimestamp + client.uptime) - clientMessage.createdTimestamp} ms`);
+    }else if(command === "rtd"){
+        if(args.length > 2){
+            if(!isNaN(args[1]) && !isNaN(args[2])){
+                clientMessage.channel.send(`You rolled: ${Math.floor(Math.random()*(parseInt(args[2]) - parseInt(args[1])))+parseInt(args[1])}`)
+            }else{
+                clientMessage.channel.send(`Please specify a min and a max number! --args <min> <max>`);
+            }
+        }else{
+            clientMessage.channel.send(`Please specify a min and a max number! --args <min> <max>`);
+        }
     }
 });
 

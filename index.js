@@ -2,6 +2,7 @@
 const Discord = require("discord.js");
 //token file that stores bot token
 const Token = require("./token.json");
+const FriendlyMessages = require("./friendlymessages.json");
 
 const client = new Discord.Client();
 
@@ -24,6 +25,26 @@ client.on('ready', () => {
 client.on('message', clientMessage => {
     const msg = clientMessage.content;
 
+    //respond with 'die' if pinged
+    if(clientMessage.isMentioned(client.user)){
+        clientMessage.channel.send("die");
+    }
+
+    //%0.1 chance to reply with 'navy seals' copypasta
+
+    //%10 chance to reply with a friendly message to NoiseGenerator
+    if(clientMessage.author.id === "345633153781596160" && Math.floor(Math.random()*10) == 7){
+        messages = FriendlyMessages.friendly;
+
+        clientMessage.channel.send(messages[Math.floor(Math.random()*messages.length)]);
+    }
+
+    //%10 chance to say a dad joke
+    const messageWords = msg.split(" ");
+    if(((messageWords[0] === 'I'  && messageWords[1] === 'am') || (messageWords[0] === 'I\'m') || (messageWords[0] === 'Im')) && Math.floor(Math.random()*10) == 3){
+        clientMessage.channel.send(`Hy ${messageWords[2]}, I\'m ${client.user.username}!`);
+    }
+
     //return if msg is not a command
     if(!msg.startsWith("--") && !clientMessage.author.bot)
         return;
@@ -39,6 +60,7 @@ client.on('message', clientMessage => {
         helpRichEmbed.addField("--help","sends a list of commands", true);
         helpRichEmbed.addField("--subscribe <stream>","subscribes to a notification stream", true);
         helpRichEmbed.addField("--unsubscribe <stream>","unsubscribes from a notification stream", true);
+        helpRichEmbed.addField("--givehelp","gives helpful advice for when you are going through a tough time", true);
         helpRichEmbed.setColor('GREEN');
 
         clientMessage.author.send(helpRichEmbed);
@@ -70,6 +92,10 @@ client.on('message', clientMessage => {
         }else{
             clientMessage.channel.send("Please specify a notification stream! Options are: \` streams \`");
         }
+    }else if(command === "givehelp"){
+        messages = FriendlyMessages.friendly;
+
+        clientMessage.channel.send(messages[Math.floor(Math.random()*messages.length)]);
     }
 });
 

@@ -21,9 +21,16 @@ client.on('message', clientMessage => {
     }
 
     //send uno reverse card
-    if(msg === "no u"){
+    if(msg.toLocaleLowerCase() === "no u"){
         clientMessage.channel.send({
             files:["https://i.imgur.com/3WDcYbV.png"]
+        });
+    }
+
+    //send swastika if no u in german
+    if(msg.toLocaleLowerCase() === "nein du"){
+        clientMessage.channel.send({
+            files:["https://upload.wikimedia.org/wikipedia/commons/thumb/a/a8/Flag_of_German_Reich_1935%E2%80%931945_%28reverse%29.svg/1200px-Flag_of_German_Reich_1935%E2%80%931945_%28reverse%29.svg.png"]
         });
     }
 
@@ -34,17 +41,17 @@ client.on('message', clientMessage => {
         clientMessage.channel.send(messages[Math.floor(Math.random()*messages.length)]);
     }
 
-    //%0.1 chance to destroy somebody
-    if(Math.floor(Math.random()*1000) === 660){
+    //%1 chance to destroy somebody
+    if(Math.floor(Math.random()*100) === 50){
         clientMessage.channel.send({
             files:["https://i.kym-cdn.com/photos/images/newsfeed/001/315/902/034.png"]
         });
     }
 
-    //%10 chance to say a dad joke
+    //%20 chance to say a dad joke
     const messageWords = msg.split(" ");
     
-    if(Math.floor(Math.random()*10) === 3){
+    if(Math.floor(Math.random()*5) === 3){
         if(messageWords.length > 2 && messageWords[0] === 'I'  && messageWords[1] === 'am'){
             if(messageWords.length > 11){
                 clientMessage.channel.send(`Hi ${messageWords[2]}, I\'m ${client.user.username}!`);

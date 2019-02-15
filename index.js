@@ -115,6 +115,7 @@ client.on('message', clientMessage => {
         helpRichEmbed.addField("--subscribe <stream>","subscribes to a notification stream", true);
         helpRichEmbed.addField("--unsubscribe <stream>","unsubscribes from a notification stream", true);
         helpRichEmbed.addField("--givehelp","gives helpful advice for when you are going through a tough time", true);
+        helpRichEmbed.addField("--ping","get the time it takes for the bot to recieve your message in ms", true);
         helpRichEmbed.setColor('GREEN');
 
         clientMessage.author.send(helpRichEmbed);
@@ -160,6 +161,9 @@ client.on('message', clientMessage => {
         messages = FriendlyMessages.friendly;
 
         clientMessage.channel.send(messages[Math.floor(Math.random()*messages.length)]);
+    }else if(command === "ping"){
+        //calculate the time it takes to recieve the message in ms
+        clientMessage.channel.send(`Pong! Message recieved in ${(client.readyTimestamp + client.uptime) - clientMessage.createdTimestamp} ms`);
     }
 });
 

@@ -13,6 +13,14 @@ var findRole = function (guild, name){
     return role;
 }
 
+//sends a formatted message to said channel
+var sendFormatted = function(channel, message){
+    var richEmbed = new Discord.RichEmbed();
+    richEmbed.setTitle(message);
+    richEmbed.setColor('GREEN');
+    channel.send(richEmbed);
+}
+
 //add events
 client.on('ready', () => {
     client.user.setActivity("--help");
@@ -116,6 +124,7 @@ client.on('message', clientMessage => {
         helpRichEmbed.addField("--unsubscribe <stream>","unsubscribes from a notification stream", true);
         helpRichEmbed.addField("--givehelp","gives helpful advice for when you are going through a tough time", true);
         helpRichEmbed.addField("--ping","get the time it takes for the bot to recieve your message in ms", true);
+        helpRichEmbed.addField("--rtd <min> <max>","rolls a number in the range min-max", true);
         helpRichEmbed.setColor('GREEN');
 
         clientMessage.author.send(helpRichEmbed);
@@ -127,16 +136,17 @@ client.on('message', clientMessage => {
             if(args[1] === 'streams'){
                 const streamRole = findRole(clientMessage.guild, 'streamnotify');
                 if(streamRole === null){
-                    clientMessage.channel.send("\` streamnotify \` is not a role on this server");
+                    sendFormatted(clientMessage.channel, ':x: \` streamnotify \` is not a role on this server');
                 }
 
                 guildAuthor.addRole(streamRole);
-                clientMessage.channel.send("You are now subscribed to streams!");
+
+                sendFormatted(clientMessage.channel, ':mega: You are now subscribed to streams!');
             }else{
-                clientMessage.channel.send("Please specify a valid notification stream! Options are: \` streams \`");
+                sendFormatted(clientMessage.channel,':x: Please specify a valid notification stream! Options are: \` streams \`');
             }
         }else{
-            clientMessage.channel.send("Please specify a notification stream! Options are: \` streams \`");
+            sendFormatted(clientMessage.channel,':x: Please specify a valid notification stream! Options are: \` streams \`');
         }
     }else if(command === "unsubscribe"){
         //unsubscribe from a notification stream
@@ -146,33 +156,36 @@ client.on('message', clientMessage => {
             if(args[1] === 'streams'){
                 const streamRole = findRole(clientMessage.guild, 'streamnotify');
                 if(streamRole === null){
-                    clientMessage.channel.send("\` streamnotify \` is not a role on this server");
+                    sendFormatted(clientMessage.channel, ':x: \` streamnotify \` is not a role on this server');
                 }
 
                 guildAuthor.removeRole(streamRole);
-                clientMessage.channel.send("You are now unsubscribed from streams!");
+
+                sendFormatted(clientMessage.channel, ':mega: You are now unsubscribed from streams!');
             }else{
-                clientMessage.channel.send("Please specify a valid notification stream! Options are: \` streams \`");
+                sendFormatted(clientMessage.channel,':x: Please specify a valid notification stream! Options are: \` streams \`');
             }
         }else{
-            clientMessage.channel.send("Please specify a notification stream! Options are: \` streams \`");
+            sendFormatted(clientMessage.channel,':x: Please specify a valid notification stream! Options are: \` streams \`');
         }
     }else if(command === "givehelp"){
         messages = FriendlyMessages.friendly;
-
-        clientMessage.channel.send(messages[Math.floor(Math.random()*messages.length)]);
+        
+        sendFormatted(clientMessage.channel, `:thumbsup: ${messages[Math.floor(Math.random()*messages.length)]} :thumbsup:`);
+        
     }else if(command === "ping"){
+        var time = (client.readyTimestamp + client.uptime) - clientMessage.createdTimestamp;
         //calculate the time it takes to recieve the message in ms
-        clientMessage.channel.send(`Pong! Message recieved in ${(client.readyTimestamp + client.uptime) - clientMessage.createdTimestamp} ms`);
+        sendFormatted(clientMessage.channel, `:ping_pong: Pong! Message recieved in ${time} ms`);
     }else if(command === "rtd"){
         if(args.length > 2){
             if(!isNaN(args[1]) && !isNaN(args[2])){
-                clientMessage.channel.send(`You rolled: ${Math.floor(Math.random()*(parseInt(args[2]) - parseInt(args[1])))+parseInt(args[1])}`)
+                sendFormatted(clientMessage.channel, `:game_die: You rolled: ${Math.floor(Math.random()*(parseInt(args[2]) - parseInt(args[1])))+parseInt(args[1])}`);
             }else{
-                clientMessage.channel.send(`Please specify a min and a max number! --args <min> <max>`);
+                sendFormatted(clientMessage.channel,`:x: Please specify a min and a max number! \` --args <min> <max>\``);
             }
         }else{
-            clientMessage.channel.send(`Please specify a min and a max number! --args <min> <max>`);
+            sendFormatted(clientMessage.channel,`:x: Please specify a min and a max number! \` --args <min> <max>\``);
         }
     }
 });

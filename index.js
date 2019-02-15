@@ -90,19 +90,11 @@ client.on('message', clientMessage => {
             }
         }else if(messageWords.length > 1 && ((messageWords[0] === 'I\'m') || (messageWords[0] === 'Im')) ){
             if(messageWords.length > 10){
-                clientMessage.channel.send(`Hi ${messageWords[2]}, I\'m ${client.user.username}!`);
+                clientMessage.channel.send(`Hi ${messageWords[1]}, I\'m ${client.user.username}!`);
             }else{
                 clientMessage.channel.send(`Hi ${messageWords.slice(1).join(' ')}, I\'m ${client.user.username}!`);
             }
         }
-    }
-    if(messageWords.length > 1 && ((messageWords.length > 2 && messageWords[0] === 'I'  && messageWords[1] === 'am') || (messageWords[0] === 'I\'m') || (messageWords[0] === 'Im')) && Math.floor(Math.random()*10) == 3){
-        if(messageWords.length <= 5){
-            clientMessage.channel.send(`Hi ${messageWords[2]}, I\'m ${client.user.username}!`);
-        }else{
-            clientMessage.channel.send(`Hi ${messageWords[2]}, I\'m ${client.user.username}!`);
-        }
-            
     }
 
     //return if msg is not a command

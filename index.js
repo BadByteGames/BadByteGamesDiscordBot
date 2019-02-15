@@ -114,8 +114,7 @@ client.on('message', clientMessage => {
     const command = args[0];
 
     if(command === "help"){
-        console.log(clientMessage.guild.roles);
-        clientMessage.channel.send("Command list sent to direct messages");
+		sendFormatted(clientMessage.channel, "Command list sent to direct messages");
         var helpRichEmbed = new Discord.RichEmbed();
         helpRichEmbed.setTitle("Here is a list of commands:");
         helpRichEmbed.setDescription("(I also assist in conversations with good stuff)");

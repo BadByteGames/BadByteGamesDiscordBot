@@ -6,24 +6,6 @@ const FriendlyMessages = require("./friendlymessages.json");
 
 const client = new Discord.Client();
 
-//deletes characters at start of string
-function deleteCharacters(original, number){
-    var str = original;
-    for(var i = 0; i < number; i++){
-        str = str.substr(1);
-    }
-
-    return str;
-}
-
-//returns array item if exists
-function returnReal(array, index){
-    if(array.length > index){
-        return array[index]+" ";
-    }
-    return "";
-}
-
 //add events
 client.on('ready', () => {
     client.user.setActivity("--help");
@@ -53,7 +35,7 @@ client.on('message', clientMessage => {
     }
 
     //%0.1 chance to destroy somebody
-    if(Math.floor(Math.random()*1000) === 666){
+    if(Math.floor(Math.random()*1000) === 660){
         clientMessage.channel.send({
             files:["https://i.kym-cdn.com/photos/images/newsfeed/001/315/902/034.png"]
         });
@@ -64,16 +46,16 @@ client.on('message', clientMessage => {
     
     if(Math.floor(Math.random()*10) === 3){
         if(messageWords.length > 2 && messageWords[0] === 'I'  && messageWords[1] === 'am'){
-            if(messageWords.length > 5){
+            if(messageWords.length > 11){
                 clientMessage.channel.send(`Hi ${messageWords[2]}, I\'m ${client.user.username}!`);
             }else{
-                clientMessage.channel.send(`Hi ${returnReal(messageWords, 2) + returnReal(messageWords, 3) + returnReal(messageWords, 4)}, I\'m ${client.user.username}!`);
+                clientMessage.channel.send(`Hi ${messageWords.slice(2).join(' ')}, I\'m ${client.user.username}!`);
             }
         }else if(messageWords.length > 1 && ((messageWords[0] === 'I\'m') || (messageWords[0] === 'Im')) ){
-            if(messageWords.length > 4){
+            if(messageWords.length > 10){
                 clientMessage.channel.send(`Hi ${messageWords[2]}, I\'m ${client.user.username}!`);
             }else{
-                clientMessage.channel.send(`Hi ${returnReal(messageWords, 1) + returnReal(messageWords, 2) + returnReal(messageWords, 3)}, I\'m ${client.user.username}!`);
+                clientMessage.channel.send(`Hi ${messageWords.slice(1).join(' ')}, I\'m ${client.user.username}!`);
             }
         }
     }
@@ -91,7 +73,7 @@ client.on('message', clientMessage => {
         return;
 
     //generate arguments list
-    const args = deleteCharacters(msg, 2).split(" ");
+    const args = msg.substring(2).split(" ");
     const command = args[0];
 
     if(command === "help"){

@@ -6,10 +6,26 @@ const FriendlyMessages = require("./friendlymessages.json");
 
 const client = new Discord.Client();
 
+//finds a role id from a discord server and returns the role object
+var findRole = function (guild, name){
+    var role = null;
+    role = guild.roles.find(val => val.name === name);
+    return role;
+}
+
 //add events
 client.on('ready', () => {
     client.user.setActivity("--help");
     console.log(`Bot logged in as ${client.user.tag}!`);
+});
+
+//add roles when user joins
+client.on('guildMemberAdd', member => {
+    const streamRole = findRole(member.guild, 'streamnotify');
+    if(streamRole === null){
+        return;
+    }
+    member.addRole(streamRole);
 });
 
 client.on('message', clientMessage => {
@@ -90,6 +106,7 @@ client.on('message', clientMessage => {
     const command = args[0];
 
     if(command === "help"){
+        console.log(clientMessage.guild.roles);
         clientMessage.channel.send("Command list sent to direct messages");
         var helpRichEmbed = new Discord.RichEmbed();
         helpRichEmbed.setTitle("Here is a list of commands:");
@@ -107,7 +124,12 @@ client.on('message', clientMessage => {
             const guildAuthor = clientMessage.guild.member(clientMessage.author);
 
             if(args[1] === 'streams'){
-                guildAuthor.addRole("545709958075908107");
+                const streamRole = findRole(clientMessage.guild, 'streamnotify');
+                if(streamRole === null){
+                    clientMessage.channel.send("\` streamnotify \` is not a role on this server");
+                }
+
+                guildAuthor.addRole(streamRole);
                 clientMessage.channel.send("You are now subscribed to streams!");
             }else{
                 clientMessage.channel.send("Please specify a valid notification stream! Options are: \` streams \`");
@@ -119,9 +141,14 @@ client.on('message', clientMessage => {
         //unsubscribe from a notification stream
         if(args.length === 2){
             const guildAuthor = clientMessage.guild.member(clientMessage.author);
-
+            
             if(args[1] === 'streams'){
-                guildAuthor.removeRole("545709958075908107");
+                const streamRole = findRole(clientMessage.guild, 'streamnotify');
+                if(streamRole === null){
+                    clientMessage.channel.send("\` streamnotify \` is not a role on this server");
+                }
+
+                guildAuthor.removeRole(streamRole);
                 clientMessage.channel.send("You are now unsubscribed from streams!");
             }else{
                 clientMessage.channel.send("Please specify a valid notification stream! Options are: \` streams \`");

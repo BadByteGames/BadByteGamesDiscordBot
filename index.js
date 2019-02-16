@@ -39,7 +39,7 @@ client.on('guildMemberAdd', member => {
 });
 
 client.on('message', clientMessage => {
-    if(clientMessage.author.bot)
+    if(clientMessage.author.bot || clientMessage.channel.type != 'text')
         return;
     const msg = clientMessage.content;
 

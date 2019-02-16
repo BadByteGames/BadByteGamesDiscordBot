@@ -1,5 +1,7 @@
 //required libraries
 const Discord = require("discord.js");
+//includes the minesweeper generator
+const MineSweeper = require("./minesweeper");
 //token file that stores bot token
 const Token = require("./token.json");
 const FriendlyMessages = require("./friendlymessages.json");
@@ -37,6 +39,8 @@ client.on('guildMemberAdd', member => {
 });
 
 client.on('message', clientMessage => {
+    if(clientMessage.author.bot)
+        return;
     const msg = clientMessage.content;
 
     //respond with 'die' if pinged
@@ -98,7 +102,7 @@ client.on('message', clientMessage => {
     }
 
     //return if msg is not a command
-    if(!msg.startsWith("--") && !clientMessage.author.bot)
+    if(!msg.startsWith("--"))
         return;
 
     //generate arguments list
@@ -116,6 +120,7 @@ client.on('message', clientMessage => {
         helpRichEmbed.addField("--givehelp","gives helpful advice for when you are going through a tough time", true);
         helpRichEmbed.addField("--ping","get the time it takes for the bot to recieve your message in ms", true);
         helpRichEmbed.addField("--rtd <min> <max>","rolls a number in the range min-max", true);
+        helpRichEmbed.addField("--minesweeper [rows(9) < 25] [columns(9) < 25] [mines(10) < rows * columns - 8]","generates a spoiler-tag base game of minesweeper", true);
         helpRichEmbed.setColor('GREEN');
 
         clientMessage.author.send(helpRichEmbed);
@@ -178,6 +183,100 @@ client.on('message', clientMessage => {
         }else{
             sendFormatted(clientMessage.channel,`:x: Please specify a min and a max number! \` --args <min> <max>\``);
         }
+    }else if(command === "minesweeper" || command === "ms"){
+        var grid = null;
+
+        var width = 9;
+        var height = 9;
+        var mines = 10;
+
+        //no args, generate a 9x9 10 mine puzzle
+        if(args.length === 1){
+            //default
+        }else if(args.length >= 2 && !isNaN(args[1]) && parseInt(args[1]) < 25){
+            width = parseInt(args[1]);
+            if(args.length >= 3 && !isNaN(args[2])  && parseInt(args[2]) < 25){
+                height = parseInt(args[2]);
+                if(args.length >= 4 && !isNaN(args[3]) && (parseInt(args[1]) * parseInt(args[2]) - 8) > parseInt(args[3])){
+                    mines = parseInt(args[3])
+                }
+            }
+        }else{
+            sendFormatted(clientMessage.channel,`:x: Make sure to follow the format: \` --minesweeper [rows(9) < 25] [columns(9) < 25] [mines(10) < rows * columns - 8]\``);
+        }
+        
+        grid = MineSweeper.genPuzzle(width, height, mines);
+
+        //make it a message
+        var msRichEmbed = new Discord.RichEmbed();
+        msRichEmbed.setColor('GREEN');
+        msRichEmbed.setTitle(":bomb: The numbers correspond to how many adjacent mines there are. Click on spoilers to reveal the tiles!");
+        msRichEmbed.setDescription(width+" x "+height+" Number of Mines: "+mines);
+        for(var y = 0; y < grid.length; y++){
+            var rowTitle = '';
+            for(var x = 0; x < grid[0].length; x++){
+                if(grid[y][x] === 'c'){
+                    rowTitle+=':zero:';
+                }else if(grid[y][x] === 'x'){
+                    rowTitle+='||:bomb:||';
+                }else if(grid[y][x] === '0'){
+                    rowTitle+='||:zero:||';
+                }else if(grid[y][x] === '1'){
+                    rowTitle+='||:one:||';
+                }else if(grid[y][x] === '2'){
+                    rowTitle+='||:two:||';
+                }else if(grid[y][x] === '3'){
+                    rowTitle+='||:three:||';
+                }else if(grid[y][x] === '4'){
+                    rowTitle+='||:four:||';
+                }else if(grid[y][x] === '5'){
+                    rowTitle+='||:five:||';
+                }else if(grid[y][x] === '6'){
+                    rowTitle+='||:six:||';
+                }else if(grid[y][x] === '7'){
+                    rowTitle+='||:seven:||';
+                }else if(grid[y][x] === '8'){
+                    rowTitle+='||:eight:||';
+                }
+            }
+            
+            y++;
+            if(y < grid.length){
+                var row = '';
+                for(var x = 0; x < grid[0].length; x++){
+                    if(grid[y][x] === 'c'){
+                        row+=':zero:';
+                    }else if(grid[y][x] === 'x'){
+                        row+='||:bomb:||';
+                    }else if(grid[y][x] === '0'){
+                        row+='||:zero:||';
+                    }else if(grid[y][x] === '1'){
+                        row+='||:one:||';
+                    }else if(grid[y][x] === '2'){
+                        row+='||:two:||';
+                    }else if(grid[y][x] === '3'){
+                        row+='||:three:||';
+                    }else if(grid[y][x] === '4'){
+                        row+='||:four:||';
+                    }else if(grid[y][x] === '5'){
+                        row+='||:five:||';
+                    }else if(grid[y][x] === '6'){
+                        row+='||:six:||';
+                    }else if(grid[y][x] === '7'){
+                        row+='||:seven:||';
+                    }else if(grid[y][x] === '8'){
+                        row+='||:eight:||';
+                    }
+                }
+                msRichEmbed.addField(rowTitle,row);
+            }else{
+                msRichEmbed.addField(rowTitle, 'Enjoy!');
+            }
+
+            
+        }
+
+        clientMessage.channel.send(msRichEmbed);
     }
 });
 

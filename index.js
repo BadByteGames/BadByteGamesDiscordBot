@@ -38,9 +38,10 @@ client.on('guildMemberAdd', member => {
     member.addRole(streamRole);
 });
 
-client.on('message', clientMessage => {
+client.on('message', async clientMessage => {
     if(clientMessage.author.bot || clientMessage.channel.type != 'text')
         return;
+
     const msg = clientMessage.content;
 
     //respond with 'die' if pinged
@@ -120,7 +121,7 @@ client.on('message', clientMessage => {
         helpRichEmbed.addField("--givehelp","gives helpful advice for when you are going through a tough time", true);
         helpRichEmbed.addField("--ping","get the time it takes for the bot to recieve your message in ms", true);
         helpRichEmbed.addField("--rtd <min> <max>","rolls a number in the range min-max", true);
-        helpRichEmbed.addField("--minesweeper [rows(9) < 25] [columns(9) < 25] [mines(10) < rows * columns - 8]","generates a spoiler-tag base game of minesweeper", true);
+        helpRichEmbed.addField("--minesweeper [rows] [columns] [mines]","generates a spoiler-tag base game of minesweeper", true);
         helpRichEmbed.setColor('GREEN');
 
         clientMessage.author.send(helpRichEmbed);
@@ -190,22 +191,56 @@ client.on('message', clientMessage => {
         var height = 9;
         var mines = 10;
 
-        //no args, generate a 9x9 10 mine puzzle
-        if(args.length === 1){
-            //default
-        }else if(args.length >= 2 && !isNaN(args[1]) && parseInt(args[1]) < 25){
-            width = parseInt(args[1]);
-            if(args.length >= 3 && !isNaN(args[2])  && parseInt(args[2]) < 25){
-                height = parseInt(args[2]);
-                if(args.length >= 4 && !isNaN(args[3]) && (parseInt(args[1]) * parseInt(args[2]) - 8) > parseInt(args[3])){
-                    mines = parseInt(args[3])
+        //go through all the numbers
+        if(args.length >= 2){
+            //custom arguments
+            if(!isNaN(args[1])){
+                width = parseInt(args[1]);
+                if(width <= 3 || width > 20){
+                    sendFormatted(clientMessage.channel,`:x: ${width} is not between 4 and 20!`);
+                    return;
                 }
+
+                if(args.length >= 3 && !isNaN(args[2])){
+                    height = parseInt(args[2]);
+                    if(height <= 3 || height > 20){
+                        sendFormatted(clientMessage.channel,`:x: ${height} is not between 4 and 20!`);
+                        return;
+                    }
+    
+                }else if(args.length >= 3){
+                    sendFormatted(clientMessage.channel,`:x: ${args[2]} is not a number!`);
+                    return;
+                }
+
+                //generate a number of mines if not specified
+                if(args.length >= 4 && !isNaN(args[3])){
+                    mines = parseInt(args[3]);
+                    if(width <= 3 || width >= 25){
+                        sendFormatted(clientMessage.channel,`:x: ${mines} is not less than ${width * height - 9}!`);
+                        return;
+                    }
+    
+                }else if(args.length >= 4){
+                    sendFormatted(clientMessage.channel,`:x: ${args[3]} is not a number!`);
+                    return;
+                }else{
+                    //generate a number of mines
+                    mines = Math.floor((width * height - 1) / 8);
+                }
+
+            }else{
+                sendFormatted(clientMessage.channel,`:x: ${args[1]} is not a number!`);
+                return;
             }
-        }else{
-            sendFormatted(clientMessage.channel,`:x: Make sure to follow the format: \` --minesweeper [rows(9) < 25] [columns(9) < 25] [mines(10) < rows * columns - 8]\``);
         }
         
         grid = MineSweeper.genPuzzle(width, height, mines);
+
+        if(grid === null){
+            sendFormatted(clientMessage.channel, `:x: Something went wrong with the minesweeper grid generation!`);
+            return;
+        }
 
         //make it a message
         var msRichEmbed = new Discord.RichEmbed();
@@ -272,7 +307,6 @@ client.on('message', clientMessage => {
             }else{
                 msRichEmbed.addField(rowTitle, 'Enjoy!');
             }
-
             
         }
 

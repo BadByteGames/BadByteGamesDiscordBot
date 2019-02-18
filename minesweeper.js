@@ -22,6 +22,10 @@ var getAdjacentTiles = function(x, y, tile, grid){
 }
 
 exports.genPuzzle = function(width, height, mines){
+    //return null if arguments are bad
+    if(width <= 3 || height <= 3 || (width * height) - 9 < mines)
+        return null;
+
     //generate initial grid
     var grid = new Array(height);
     for(var y = 0; y < width; y++){

@@ -32,7 +32,7 @@ exports.genPuzzle = function(width, height, mines){
     var availableTiles = new Array();
     //generate initial grid
     var grid = new Array(height);
-    for(var y = 0; y < width; y++){
+    for(var y = 0; y < height; y++){
         grid[y] = new Array(width);
         grid[y].fill('e');
     }
@@ -121,7 +121,7 @@ exports.verifyPuzzle = function(grid, numMines){
 
     //generate a grid of "known" values
     var knownGrid = new Array(grid.length);
-    for(var y = 0; y < grid[0].length; y++){
+    for(var y = 0; y < grid.length; y++){
         knownGrid[y] = new Array(grid[0].length);
         knownGrid[y].fill('u');
     }

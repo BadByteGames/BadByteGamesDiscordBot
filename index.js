@@ -76,8 +76,8 @@ client.on('message', async clientMessage => {
         clientMessage.channel.send(messages[Math.floor(Math.random()*messages.length)]);
     }
 
-    //%1 chance to destroy somebody
-    if(Math.floor(Math.random()*100) === 50){
+    //%0.1 chance to destroy somebody
+    if(Math.floor(Math.random()*1000) === 50){
         clientMessage.channel.send({
             files:["https://i.kym-cdn.com/photos/images/newsfeed/001/315/902/034.png"]
         });
@@ -216,7 +216,7 @@ client.on('message', async clientMessage => {
                 //generate a number of mines if not specified
                 if(args.length >= 4 && !isNaN(args[3])){
                     mines = parseInt(args[3]);
-                    if(width <= 3 || width >= 25){
+                    if((width * height) - 9 < mines){
                         sendFormatted(clientMessage.channel,`:x: ${mines} is not less than ${width * height - 9}!`);
                         return;
                     }
@@ -236,6 +236,10 @@ client.on('message', async clientMessage => {
         }
         
         grid = MineSweeper.genPuzzle(width, height, mines);
+        while(!MineSweeper.verifyPuzzle(grid, mines)){
+            grid = MineSweeper.genPuzzle(width, height, mines);
+        }
+
 
         if(grid === null){
             sendFormatted(clientMessage.channel, `:x: Something went wrong with the minesweeper grid generation!`);
@@ -245,8 +249,15 @@ client.on('message', async clientMessage => {
         //make it a message
         var msRichEmbed = new Discord.RichEmbed();
         msRichEmbed.setColor('GREEN');
+        
+        //let user know if verified
+        var verified = true;
+        if(mines / (grid.length * grid[0].length) > 0.25){
+            verified = false;
+        }
+
         msRichEmbed.setTitle(":bomb: The numbers correspond to how many adjacent mines there are. Click on spoilers to reveal the tiles!");
-        msRichEmbed.setDescription(width+" x "+height+" Number of Mines: "+mines);
+        msRichEmbed.setDescription(width + " x " + height + " :bomb: Number of Mines: " + mines + " :bomb: Guaranteed Solvable: " + (verified ? "Yes" : "Unknown (higher than 25% mines)"));
         for(var y = 0; y < grid.length; y++){
             var rowTitle = '';
             for(var x = 0; x < grid[0].length; x++){

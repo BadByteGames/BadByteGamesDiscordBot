@@ -44,7 +44,7 @@ client.on('guildMemberAdd', member => {
     member.addRole(streamRole);
 });
 
-client.on('message', async clientMessage => {
+client.on('message', clientMessage => {
     if(clientMessage.author.bot || clientMessage.channel.type != 'text')
         return;
 

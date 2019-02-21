@@ -18,8 +18,14 @@ var findRole = function (guild, name){
 //sends a formatted message to said channel
 var sendFormatted = function(channel, message){
     var richEmbed = new Discord.RichEmbed();
-    richEmbed.setTitle(message);
+     //change to error if too long
+     if(message.length >= 256){
+        richEmbed.setTitle(`:x: One or more of the arguments was too long!`);
+    }else{
+        richEmbed.setTitle(message);
+    }
     richEmbed.setColor('GREEN');
+   
     channel.send(richEmbed);
 }
 
@@ -215,9 +221,12 @@ client.on('message', async clientMessage => {
 
                 //generate a number of mines if not specified
                 if(args.length >= 4 && !isNaN(args[3])){
-                    mines = parseInt(args[3]);
+                    mines = Math.floor(parseInt(args[3]));
                     if((width * height) - 9 < mines){
-                        sendFormatted(clientMessage.channel,`:x: ${mines} is not less than ${width * height - 9}!`);
+                        sendFormatted(clientMessage.channel,`:x: The number of mines is not less than or equal to ${width * height - 9}!`);
+                        return;
+                    }else if(mines < 0){
+                        sendFormatted(clientMessage.channel,`:x: The number of mines is less than 0!`);
                         return;
                     }
     

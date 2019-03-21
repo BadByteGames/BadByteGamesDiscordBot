@@ -44,7 +44,7 @@ client.on('guildMemberAdd', member => {
     member.addRole(streamRole);
 });
 
-client.on('message', clientMessage => {
+client.on('message', async clientMessage => {
     if(clientMessage.author.bot || clientMessage.channel.type != 'text')
         return;
 
@@ -129,6 +129,7 @@ client.on('message', clientMessage => {
         helpRichEmbed.addField("--rtd <min> <max>","rolls a number in the range min-max");
         helpRichEmbed.addField("--minesweeper [rows] [columns] [mines]","generates a spoiler-tag base game of minesweeper");
         helpRichEmbed.addField("--phil","Dr. Phil");
+        helpRichEmbed.addField("--bruh","reveals that the last message was a bruh moment");
         helpRichEmbed.setColor('GREEN');
 
         clientMessage.author.send(helpRichEmbed);
@@ -343,6 +344,17 @@ client.on('message', clientMessage => {
                 name: 'Point.png'
             }]
         });
+    }else if(command === "bruh"){
+        //BRUHH
+        var messages = await clientMessage.channel.fetchMessages({limit: 2});
+
+        clientMessage.delete();
+
+        if(!messages.last().author.bot){
+            sendFormatted(clientMessage.channel, `:thinking: BRUH MOMENT: ${messages.last().author.username} said \"${messages.last().content}\"`);
+        }else{
+            sendFormatted(clientMessage.channel, `:thinking: You can't bruh a bot!`);
+        }
     }
 });
 

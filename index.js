@@ -121,13 +121,14 @@ client.on('message', clientMessage => {
         var helpRichEmbed = new Discord.RichEmbed();
         helpRichEmbed.setTitle("Here is a list of commands:");
         helpRichEmbed.setDescription("(I also assist in conversations with good stuff)");
-        helpRichEmbed.addField("--help","sends a list of commands", true);
-        helpRichEmbed.addField("--subscribe <stream>","subscribes to a notification stream", true);
-        helpRichEmbed.addField("--unsubscribe <stream>","unsubscribes from a notification stream", true);
-        helpRichEmbed.addField("--givehelp","gives helpful advice for when you are going through a tough time", true);
-        helpRichEmbed.addField("--ping","get the time it takes for the bot to recieve your message in ms", true);
-        helpRichEmbed.addField("--rtd <min> <max>","rolls a number in the range min-max", true);
-        helpRichEmbed.addField("--minesweeper [rows] [columns] [mines]","generates a spoiler-tag base game of minesweeper", true);
+        helpRichEmbed.addField("--help","sends a list of commands");
+        helpRichEmbed.addField("--subscribe <stream>","subscribes to a notification stream");
+        helpRichEmbed.addField("--unsubscribe <stream>","unsubscribes from a notification stream");
+        helpRichEmbed.addField("--givehelp","gives helpful advice for when you are going through a tough time");
+        helpRichEmbed.addField("--ping","get the time it takes for the bot to recieve your message in ms");
+        helpRichEmbed.addField("--rtd <min> <max>","rolls a number in the range min-max");
+        helpRichEmbed.addField("--minesweeper [rows] [columns] [mines]","generates a spoiler-tag base game of minesweeper");
+        helpRichEmbed.addField("--phil","Dr. Phil");
         helpRichEmbed.setColor('GREEN');
 
         clientMessage.author.send(helpRichEmbed);
@@ -331,6 +332,17 @@ client.on('message', clientMessage => {
         }
 
         clientMessage.channel.send(msRichEmbed);
+    }else if(command === "phil"){
+        clientMessage.delete();
+        clientMessage.channel.send({
+            files: [{
+                attachment: './shrug.png',
+                name: 'shrug.png'
+            },{
+                attachment: './Point.png',
+                name: 'Point.png'
+            }]
+        });
     }
 });
 

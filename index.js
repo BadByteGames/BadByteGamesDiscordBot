@@ -107,7 +107,7 @@ client.on('message', async clientMessage => {
 
     //%10 chance to reply with a friendly message to NoiseGenerator
     if(clientMessage.author.id === "345633153781596160" && Math.floor(Math.random()*10) == 7){
-        messages = FriendlyMessages.friendly;
+        messages = FriendlyMessages.friendly.concat(FriendlyMessages.reallyfriendly);
 
         clientMessage.channel.send(messages[Math.floor(Math.random()*messages.length)]);
     }

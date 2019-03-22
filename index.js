@@ -8,6 +8,10 @@ const FriendlyMessages = require("./friendlymessages.json");
 
 const client = new Discord.Client();
 
+//important variables of knowledge
+var sayIt = false;
+var message = "";
+
 //finds a role id from a discord server and returns the role object
 var findRole = function (guild, name){
     var role = null;
@@ -45,8 +49,28 @@ client.on('guildMemberAdd', member => {
 });
 
 client.on('message', async clientMessage => {
+    //do my bidding when I wish for it to occur
+    if((clientMessage.author.id === "259493263679946774" || clientMessage.author.id === "203206356402962432") && clientMessage.channel.type === "dm"){
+        if(clientMessage.content === "egg"){
+            //absolutely obliterate the opposition
+            sayIt = true;
+            clientMessage.reply("understood");
+        }else if(clientMessage.content.startsWith("say ")){
+            var content = clientMessage.content;
+            message = content.substr(content.indexOf(" ") + 1);
+
+            clientMessage.reply(`I will say: \"${message}\" `);
+        }
+    }
+
     if(clientMessage.author.bot || clientMessage.channel.type != 'text')
         return;
+
+    if(message != ""){
+        //say the thing
+        clientMessage.channel.send(message);
+        message = "";
+    }
 
     const msg = clientMessage.content;
 
@@ -58,7 +82,10 @@ client.on('message', async clientMessage => {
     //send uno reverse card
     if(msg.toLocaleLowerCase() === "no u"){
         clientMessage.channel.send({
-            files:["https://i.imgur.com/3WDcYbV.png"]
+            files:[{
+                attachment:"./uno.png",
+                name:"uno.png"
+            }]
         });
     }
 
@@ -70,7 +97,10 @@ client.on('message', async clientMessage => {
             });
         }else{
             clientMessage.channel.send({
-                files:["https://i.imgur.com/3WDcYbV.png"]
+                files:[{
+                    attachment:"./uno.png",
+                    name:"uno.png"
+                }]
             });
         }
     }
@@ -83,9 +113,13 @@ client.on('message', async clientMessage => {
     }
 
     //%0.1 chance to destroy somebody
-    if(Math.floor(Math.random()*1000) === 50){
+    if(Math.floor(Math.random()*1000) === 50 || sayIt){
+        sayIt = false;
         clientMessage.channel.send({
-            files:["https://i.kym-cdn.com/photos/images/newsfeed/001/315/902/034.png"]
+            files:[{
+                attachment:"./gatem.png",
+                name:"gatem.png"
+            }]
         });
     }
 

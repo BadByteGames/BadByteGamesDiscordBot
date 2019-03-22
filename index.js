@@ -55,6 +55,10 @@ client.on('message', async clientMessage => {
             //absolutely obliterate the opposition
             sayIt = true;
             clientMessage.reply("understood");
+        }else if(clientMessage.content === "no egg"){
+            //absolutely obliterate the opposition
+            sayIt = false;
+            clientMessage.reply("understood");
         }else if(clientMessage.content.startsWith("say ")){
             var content = clientMessage.content;
             message = content.substr(content.indexOf(" ") + 1);

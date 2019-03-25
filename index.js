@@ -51,7 +51,7 @@ client.on('guildMemberAdd', member => {
 
 client.on('message', async clientMessage => {
     //do my bidding when I wish for it to occur
-    if(Admins.admins.includes(clientMessage.author.id)){
+    if((Admins.admins.includes(clientMessage.author.id)) && clientMessage.channel.type === "dm"){
         if(clientMessage.content === "egg"){
             //absolutely obliterate the opposition
             sayIt = true;

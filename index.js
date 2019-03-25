@@ -5,6 +5,7 @@ const MineSweeper = require("./minesweeper");
 //token file that stores bot token
 const Token = require("./token.json");
 const FriendlyMessages = require("./friendlymessages.json");
+const Admins = require("./admins.json");
 
 const client = new Discord.Client();
 
@@ -50,7 +51,7 @@ client.on('guildMemberAdd', member => {
 
 client.on('message', async clientMessage => {
     //do my bidding when I wish for it to occur
-    if((clientMessage.author.id === "259493263679946774" || clientMessage.author.id === "203206356402962432") && clientMessage.channel.type === "dm"){
+    if(Admins.admins.includes(clientMessage.author.id)){
         if(clientMessage.content === "egg"){
             //absolutely obliterate the opposition
             sayIt = true;

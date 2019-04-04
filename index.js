@@ -181,11 +181,11 @@ client.on('message', async clientMessage => {
                 const streamRole = findRole(clientMessage.guild, 'streamnotify');
                 if(streamRole === null){
                     sendFormatted(clientMessage.channel, ':x: \` streamnotify \` is not a role on this server');
+                }else{
+                    guildAuthor.addRole(streamRole);
+
+                    sendFormatted(clientMessage.channel, ':mega: You are now subscribed to streams!');
                 }
-
-                guildAuthor.addRole(streamRole);
-
-                sendFormatted(clientMessage.channel, ':mega: You are now subscribed to streams!');
             }else{
                 sendFormatted(clientMessage.channel,':x: Please specify a valid notification stream! Options are: \` streams \`');
             }
@@ -201,11 +201,11 @@ client.on('message', async clientMessage => {
                 const streamRole = findRole(clientMessage.guild, 'streamnotify');
                 if(streamRole === null){
                     sendFormatted(clientMessage.channel, ':x: \` streamnotify \` is not a role on this server');
+                }else{
+                    guildAuthor.removeRole(streamRole);
+
+                    sendFormatted(clientMessage.channel, ':mega: You are now unsubscribed from streams!');
                 }
-
-                guildAuthor.removeRole(streamRole);
-
-                sendFormatted(clientMessage.channel, ':mega: You are now unsubscribed from streams!');
             }else{
                 sendFormatted(clientMessage.channel,':x: Please specify a valid notification stream! Options are: \` streams \`');
             }
@@ -374,15 +374,34 @@ client.on('message', async clientMessage => {
         clientMessage.channel.send(msRichEmbed);
     }else if(command === "phil"){
         clientMessage.delete();
-        clientMessage.channel.send({
+        await clientMessage.channel.send({
             files: [{
-                attachment: './shrug.png',
-                name: 'shrug.png'
-            },{
                 attachment: './Point.png',
                 name: 'Point.png'
             }]
         });
+        await clientMessage.channel.send("Shut the hell up bitch.");
+        await clientMessage.channel.send({
+            files: [{
+                attachment: './shrug.png',
+                name: 'shrug.png'
+            }]
+        });
+        await clientMessage.channel.send("Go kill yourself. Go sit in the middle of the road and let a car run over you.");
+        await clientMessage.channel.send({
+            files: [{
+                attachment: './phil.jpg',
+                name: 'phil.jpg'
+            }]
+        });
+        await clientMessage.channel.send("You are ugly. You are disgusting. I'm going to kill you.");
+        await clientMessage.channel.send({
+            files: [{
+                attachment: './philtalk.jpg',
+                name: 'philtalk.jpg'
+            }]
+        });
+        await clientMessage.channel.send("You're an alcoholic.");
     }else if(command === "bruh"){
         //BRUHH
         var messages = await clientMessage.channel.fetchMessages({limit: 2});

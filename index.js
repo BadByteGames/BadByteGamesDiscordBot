@@ -155,6 +155,8 @@ client.on('message', async clientMessage => {
     const args = msg.substring(2).split(" ");
     const command = args[0];
 
+    clientMessage.channel.startTyping();
+
     if(command === "help"){
 		sendFormatted(clientMessage.channel, "Command list sent to direct messages");
         var helpRichEmbed = new Discord.RichEmbed();
@@ -245,6 +247,7 @@ client.on('message', async clientMessage => {
                 width = parseInt(args[1]);
                 if(width <= 3 || width > 20){
                     sendFormatted(clientMessage.channel,`:x: ${width} is not between 4 and 20!`);
+                    clientMessage.channel.stopTyping();
                     return;
                 }
 
@@ -252,11 +255,13 @@ client.on('message', async clientMessage => {
                     height = parseInt(args[2]);
                     if(height <= 3 || height > 20){
                         sendFormatted(clientMessage.channel,`:x: ${height} is not between 4 and 20!`);
+                        clientMessage.channel.stopTyping();
                         return;
                     }
     
                 }else if(args.length >= 3){
                     sendFormatted(clientMessage.channel,`:x: ${args[2]} is not a number!`);
+                    clientMessage.channel.stopTyping();
                     return;
                 }
 
@@ -265,14 +270,17 @@ client.on('message', async clientMessage => {
                     mines = Math.floor(parseInt(args[3]));
                     if((width * height) - 9 < mines){
                         sendFormatted(clientMessage.channel,`:x: The number of mines is not less than or equal to ${width * height - 9}!`);
+                        clientMessage.channel.stopTyping();
                         return;
                     }else if(mines < 0){
                         sendFormatted(clientMessage.channel,`:x: The number of mines is less than 0!`);
+                        clientMessage.channel.stopTyping();
                         return;
                     }
     
                 }else if(args.length >= 4){
                     sendFormatted(clientMessage.channel,`:x: ${args[3]} is not a number!`);
+                    clientMessage.channel.stopTyping();
                     return;
                 }else{
                     //generate a number of mines
@@ -281,6 +289,7 @@ client.on('message', async clientMessage => {
 
             }else{
                 sendFormatted(clientMessage.channel,`:x: ${args[1]} is not a number!`);
+                clientMessage.channel.stopTyping();
                 return;
             }
         }
@@ -293,6 +302,7 @@ client.on('message', async clientMessage => {
 
         if(grid === null){
             sendFormatted(clientMessage.channel, `:x: Something went wrong with the minesweeper grid generation!`);
+            clientMessage.channel.stopTyping();
             return;
         }
 
@@ -414,6 +424,7 @@ client.on('message', async clientMessage => {
             sendFormatted(clientMessage.channel, `:thinking: You can't bruh a bot!`);
         }
     }
+    clientMessage.channel.stopTyping();
 });
 
 //login to the client

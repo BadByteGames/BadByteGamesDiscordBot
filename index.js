@@ -1,5 +1,7 @@
 //required libraries
 const Discord = require("discord.js");
+const sqlite3 = require('sqlite3').verbose();
+const userdatabase = new sqlite3.Database('userdata');
 //includes the minesweeper generator
 const MineSweeper = require("./minesweeper");
 //token file that stores bot token
@@ -34,10 +36,49 @@ var sendFormatted = function(channel, message){
     channel.send(richEmbed);
 }
 
+//validate the sql table and create it if necessary
+var validateTable = function(){
+    userdatabase.get('select name from sqlite_master where type=\'table\' and name=\'users\';', [], function(err, row){
+        if(err != null){
+            //error then quit
+            console.log(err.message);
+            process.exit();
+        }else if(row === undefined){
+            console.log("No users table exists! Users table created!");
+            userdatabase.run('create table users(id integer primary key autoincrement not null, discord_id integer not null, blarts integer not null);');
+        }
+    });
+}
+
+//create an entry for the user
+var createBlarts = async function(userid){
+    //create an entry for the user since they don't exist
+    userdatabase.run(`insert into users (discord_id, blarts) values(${userid}, 1);`);
+}
+
+var getBlarts = async function(user, channel){
+    //return the blarts of the user
+    userdatabase.get('select blarts from users where discord_id=?3;', {3: user.id}, function(err, row){
+        if(err != null){
+            console.log(err.message);
+            sendFormatted(channel, "(Something went wrong! This is fine.)");
+            channel.stopTyping();
+        }else if(row != undefined){
+            sendFormatted(channel, `${user.username} has ${row.blarts} blarts!`);
+            channel.stopTyping();
+        }else{
+            createBlarts(user.id);
+            sendFormatted(channel, `${user.username} has 1 blarts!`);
+            channel.stopTyping();
+        }
+    });
+}
+
 //add events
 client.on('ready', () => {
     client.user.setActivity("--help");
     console.log(`Bot logged in as ${client.user.tag}!`);
+    validateTable();
 });
 
 //add roles when user joins
@@ -155,9 +196,8 @@ client.on('message', async clientMessage => {
     const args = msg.substring(2).split(" ");
     const command = args[0];
 
-    clientMessage.channel.startTyping();
-
     if(command === "help"){
+        clientMessage.channel.startTyping();
 		sendFormatted(clientMessage.channel, "Command list sent to direct messages");
         var helpRichEmbed = new Discord.RichEmbed();
         helpRichEmbed.setTitle("Here is a list of commands:");
@@ -171,6 +211,7 @@ client.on('message', async clientMessage => {
         helpRichEmbed.addField("--minesweeper [rows] [columns] [mines]","generates a spoiler-tag base game of minesweeper");
         helpRichEmbed.addField("--phil","Dr. Phil");
         helpRichEmbed.addField("--bruh","reveals that the last message was a bruh moment");
+        helpRichEmbed.addField("--blarts [username]", "tells how many blarts you or the specified user has");
         helpRichEmbed.setColor('GREEN');
 
         clientMessage.author.send(helpRichEmbed);
@@ -195,6 +236,7 @@ client.on('message', async clientMessage => {
             sendFormatted(clientMessage.channel,':x: Please specify a valid notification stream! Options are: \` streams \`');
         }
     }else if(command === "unsubscribe"){
+        clientMessage.channel.startTyping();
         //unsubscribe from a notification stream
         if(args.length === 2){
             const guildAuthor = clientMessage.guild.member(clientMessage.author);
@@ -215,15 +257,18 @@ client.on('message', async clientMessage => {
             sendFormatted(clientMessage.channel,':x: Please specify a valid notification stream! Options are: \` streams \`');
         }
     }else if(command === "givehelp"){
+        clientMessage.channel.startTyping();
         messages = FriendlyMessages.friendly;
         
         sendFormatted(clientMessage.channel, `:thumbsup: ${messages[Math.floor(Math.random()*messages.length)]} :thumbsup:`);
         
     }else if(command === "ping"){
+        clientMessage.channel.startTyping();
         var time = (client.readyTimestamp + client.uptime) - clientMessage.createdTimestamp;
         //calculate the time it takes to recieve the message in ms
         sendFormatted(clientMessage.channel, `:ping_pong: Pong! Message recieved in ${time} ms`);
     }else if(command === "rtd"){
+        clientMessage.channel.startTyping();
         if(args.length > 2){
             if(!isNaN(args[1]) && !isNaN(args[2])){
                 sendFormatted(clientMessage.channel, `:game_die: You rolled: ${Math.floor(Math.random()*(parseInt(args[2]) - parseInt(args[1])))+parseInt(args[1])}`);
@@ -234,6 +279,7 @@ client.on('message', async clientMessage => {
             sendFormatted(clientMessage.channel,`:x: Please specify a min and a max number! \` --args <min> <max>\``);
         }
     }else if(command === "minesweeper" || command === "ms"){
+        clientMessage.channel.startTyping();
         var grid = null;
 
         var width = 9;
@@ -383,6 +429,7 @@ client.on('message', async clientMessage => {
 
         clientMessage.channel.send(msRichEmbed);
     }else if(command === "phil"){
+        clientMessage.channel.startTyping();
         clientMessage.delete();
         await clientMessage.channel.send({
             files: [{
@@ -413,6 +460,7 @@ client.on('message', async clientMessage => {
         });
         await clientMessage.channel.send("You're an alcoholic.");
     }else if(command === "bruh"){
+        clientMessage.channel.startTyping();
         //BRUHH
         var messages = await clientMessage.channel.fetchMessages({limit: 2});
 
@@ -423,8 +471,27 @@ client.on('message', async clientMessage => {
         }else{
             sendFormatted(clientMessage.channel, `:thinking: You can't bruh a bot!`);
         }
+    }else if(command === "blarts"){
+        if(args.length >= 2){
+            //check for username
+            var name = args.splice(1).join(" ");
+            var user = client.users.find(user => user.username === name);
+
+            if(user != null){
+                if(user.bot){
+                    sendFormatted(clientMessage.channel, `${user.username} has infinite blarts!`);
+                }else{
+                    getBlarts(user, clientMessage.channel);
+                }
+            }else{
+                sendFormatted(clientMessage.channel, `:x: Failed to find a user called ${name}!`);
+            }
+        }else{
+            getBlarts(clientMessage.author, clientMessage.channel);
+        }
     }
-    clientMessage.channel.stopTyping();
+
+    clientMessage.channel.stopTyping(true);
 });
 
 //login to the client

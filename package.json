@@ -20,6 +20,7 @@
   },
   "homepage": "https://github.com/BadByteGames/BadByteGamesDiscordBot#readme",
   "dependencies": {
-    "discord.js": "^11.4.2"
+    "discord.js": "^11.4.2",
+    "sqlite3": "^4.0.6"
   }
 }

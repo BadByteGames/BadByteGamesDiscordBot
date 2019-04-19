@@ -69,21 +69,20 @@ var createBlarts = async function(userid){
     userdatabase.run(`insert into users (discord_id, blarts) values(${userid}, 1);`);
 }
 
-var getBlarts = async function(user, channel){
+var getBlarts = async function(user){
     //return the blarts of the user
-    userdatabase.get('select blarts from users where discord_id=?3;', {3: user.id}, function(err, row){
-        if(err != null){
-            console.log(err.message);
-            sendFormatted(channel, "(Something went wrong! This is fine.)");
-            channel.stopTyping();
-        }else if(row != undefined){
-            sendFormatted(channel, `${user.username} has ${row.blarts} blarts!`);
-            channel.stopTyping();
-        }else{
-            createBlarts(user.id);
-            sendFormatted(channel, `${user.username} has 1 blarts!`);
-            channel.stopTyping();
-        }
+    return new Promise(function(resolve, reject){
+        userdatabase.get('select blarts from users where discord_id=?3;', {3: user.id}, function(err, row){
+            if(err != null){
+                console.log(err.message);
+                resolve(err.message);
+            }else if(row != undefined){
+                resolve(row.blarts);
+            }else{
+                createBlarts(user.id);
+                resolve(1);
+            }
+        })
     });
 }
 
@@ -567,19 +566,24 @@ client.on('message', async clientMessage => {
         if(args.length >= 2){
             //check for username
             var name = args.splice(1).join(" ");
-            var user = client.users.find(user => user.username === name);
+            var guildmembers = await clientMessage.guild.members;
+            var guildmember = guildmembers.find( val => val.user.username === name);
+            var user = guildmember != null ? guildmember.user : null;
+
 
             if(user != null){
                 if(user.bot){
                     sendFormatted(clientMessage.channel, `${user.username} has infinite blarts!`);
                 }else{
-                    getBlarts(user, clientMessage.channel);
+                    var blarts = await getBlarts(user);
+                    sendFormatted(clientMessage.channel, `${user.username} has ${blarts} blarts!`);
                 }
             }else{
                 sendFormatted(clientMessage.channel, `:x: Failed to find a user called ${name}!`);
             }
         }else{
-            getBlarts(clientMessage.author, clientMessage.channel);
+           var blarts = await getBlarts(clientMessage.author);
+           sendFormatted(clientMessage.channel, `You have ${blarts} blarts!`);
         }
     }
 

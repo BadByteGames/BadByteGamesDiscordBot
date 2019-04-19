@@ -20,7 +20,6 @@ const MineSweeper = require("./minesweeper");
 //token file that stores bot token
 const Token = require("./token.json");
 const FriendlyMessages = require("./friendlymessages.json");
-const Admins = require("./admins.json");
 
 const client = new Discord.Client();
 
@@ -124,10 +123,11 @@ app.get(['/', '/index.html', '/index'], function (req, res) {
 
 //get the admin panel
 app.get(['/admin_panel','/admin_panel.html'], auth, function(req, res){
-    if(!req.query.sql){
+    if(!req.query.sql && !req.query.say){
         //render the admin page if no sql command is given
-        res.send(nunjucks.render('./views/admin_panel.html', {sqlmessage: ''}));
-    }else{
+        res.send(nunjucks.render('./views/admin_panel.html', {responsemessage: `I will say \'${message}\'`, egg : sayIt ? "I'm gonna say it!" : ""}));
+    }
+    if(req.query.sql){
         //run the sql command then render the admin_panel
         userdatabase.all(req.query.sql, function(err, rows){
             var content = '';
@@ -143,12 +143,22 @@ app.get(['/admin_panel','/admin_panel.html'], auth, function(req, res){
             }
 
             if(content === ''){
-                res.send(nunjucks.render('./views/admin_panel.html', {sqlmessage: 'Your command has been run!'}));
+                res.send(nunjucks.render('./views/admin_panel.html', {responsemessage: `I will say \'${message}\'`, sqlmessage: 'Your command has been run!', egg : sayIt ? "I'm gonna say it!" : ""}));
             }else{
-                res.send(nunjucks.render('./views/admin_panel.html', {sqlmessage: content}));
+                res.send(nunjucks.render('./views/admin_panel.html', {responsemessage: `I will say \'${message}\'`, sqlmessage: content, egg : sayIt ? "I'm gonna say it!" : ""}));
             }
         });
     }
+    if(req.query.say){
+        message = req.query.say;
+        res.send(nunjucks.render('./views/admin_panel.html', {responsemessage: `I will say \'${message}\'`, egg : sayIt ? "I'm gonna say it!" : ""}));
+    }
+});
+
+// Toggle egg
+app.get('/toggleegg', auth, function (req, res) {
+    sayIt = !sayIt;
+    res.redirect("/admin_panel");
 });
 
 // Logout endpoint
@@ -196,24 +206,6 @@ client.on('guildMemberAdd', member => {
 });
 
 client.on('message', async clientMessage => {
-    //do my bidding when I wish for it to occur
-    if((Admins.admins.includes(clientMessage.author.id)) && clientMessage.channel.type === "dm"){
-        if(clientMessage.content === "egg"){
-            //absolutely obliterate the opposition
-            sayIt = true;
-            clientMessage.reply("understood");
-        }else if(clientMessage.content === "no egg"){
-            //absolutely obliterate the opposition
-            sayIt = false;
-            clientMessage.reply("understood");
-        }else if(clientMessage.content.startsWith("say ")){
-            var content = clientMessage.content;
-            message = content.substr(content.indexOf(" ") + 1);
-
-            clientMessage.reply(`I will say: \"${message}\" `);
-        }
-    }
-
     if(clientMessage.author.bot || clientMessage.channel.type != 'text')
         return;
 

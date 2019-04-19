@@ -7,10 +7,18 @@
   </head>
   <body>
     <form action="/admin_panel.html">
-        <input type="text" name="sql"><br>
-        <button type="Submit" value="Submit">Send Hack</button>
+      <input type="text" name="sql"><br>
+      <button type="Submit" value="Submit">Send Hack</button>
+      <p>{{sqlmessage}}</p>
+      <input type="text" name="say"><br>
+      <button type="Submit" value="Submit">Set Message</button>
+      <p>{{responsemessage}}</p>
     </form>
-    <p>{{sqlmessage}}</p>
+    <form action="/toggleegg">
+      <button type="Submit" value="Submit">Toggle Egg</button>
+      <p>{{egg}}</p>
+    </form>
+    
     <a href="/logout">Logout</a>
   </body>
 </html>

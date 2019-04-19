@@ -86,6 +86,20 @@ var getBlarts = async function(user){
     });
 }
 
+var setBlarts = async function(user, value){
+    //return the blarts of the user
+    return new Promise(function(resolve, reject){
+        userdatabase.get('update users set blarts=?2 where discord_id=?3;', {2:value, 3: user.id}, function(err, row){
+            if(err != null){
+                console.log(err.message);
+                resolve(err.message);
+            }else{
+                resolve(value);
+            }
+        })
+    });
+}
+
 // Authentication and Authorization Middleware
 var auth = function(req, res, next) {
     if (req.session && req.session.user === "admin" && req.session.admin)
@@ -303,6 +317,8 @@ client.on('message', async clientMessage => {
         helpRichEmbed.addField("--phil","Dr. Phil");
         helpRichEmbed.addField("--bruh","reveals that the last message was a bruh moment");
         helpRichEmbed.addField("--blarts [username]", "tells how many blarts you or the specified user has");
+        helpRichEmbed.addField("--betmyblarts <number>", "flips a coin to chance doubling blarts or lose them");
+        helpRichEmbed.addField("--generateblarts", "gives you a blart if you're broke but the command might be removed later when blart debt camp is implemented");
         helpRichEmbed.setColor('GREEN');
 
         clientMessage.author.send(helpRichEmbed);
@@ -584,6 +600,54 @@ client.on('message', async clientMessage => {
         }else{
            var blarts = await getBlarts(clientMessage.author);
            sendFormatted(clientMessage.channel, `You have ${blarts} blarts!`);
+        }
+    }else if(command === "betmyblarts"){
+        if(args.length >= 2){
+            //the user bet their blarts that vegas has bees
+            if(!isNaN(args[1])){
+                var blartNum = Math.floor(parseInt(args[1]));
+
+                var userblarts = await getBlarts(clientMessage.author);
+                if(blartNum <= 0){
+                    sendFormatted(clientMessage.channel, ':x: You need to bet 1 or more blarts!');
+                }else if(blartNum > userblarts){
+                    sendFormatted(clientMessage.channel, ':x: You don\'t have that many blarts to bet!');
+                }else{
+                    //flip a coin if 1-50 and have another coin toss for every 25 after
+                    if(blartNum <= 50){
+                        if(Math.floor(Math.random()*2) === 1){
+                            userblarts += blartNum;
+                            sendFormatted(clientMessage.channel, `:game_die: You bet your blarts that vegas had bees and won. Current balance: ${userblarts}`);
+                        }else{
+                            userblarts -= blartNum;
+                            sendFormatted(clientMessage.channel, `:game_die: You bet your blarts but vegas did not have bees. Current balance: ${userblarts}`);
+                        }
+                    }else{
+                        //lower their chances for getting to cocky
+                        var cointoss = Math.floor(blartNum / 25) - 2;
+                        if(Math.floor(Math.random()*Math.pow(2, cointoss)) === 1){
+                            userblarts += blartNum;
+                            sendFormatted(clientMessage.channel, `:game_die: You bet your blarts that vegas had bees and won. Current balance: ${userblarts}`);
+                        }else{
+                            userblarts -= blartNum;
+                            sendFormatted(clientMessage.channel, `:game_die: You bet your blarts but vegas did not have bees. Current balance: ${userblarts}`);
+                        }
+                    }
+
+                    //update their blarts
+                    setBlarts(clientMessage.author, userblarts);
+                }
+            }else{
+                sendFormatted(clientMessage.channel, ':x: You need to specify a number!');
+            }
+        }else{
+            sendFormatted(clientMessage.channel, ':x: You need to specify how many blarts to bet!');
+        }
+    }else if(command === "generateblarts"){
+        var userBlarts = await getBlarts(clientMessage.author);
+        if(userBlarts <= 0){
+            clientMessage.channel.send("Fine faggot, have a blart but I won't be doing this forever.");
+            setBlarts(clientMessage.author, 1);
         }
     }
 

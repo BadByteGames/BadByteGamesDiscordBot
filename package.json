@@ -21,6 +21,9 @@
   "homepage": "https://github.com/BadByteGames/BadByteGamesDiscordBot#readme",
   "dependencies": {
     "discord.js": "^11.4.2",
+    "express": "^4.16.4",
+    "express-session": "^1.16.1",
+    "nunjucks": "^3.2.0",
     "sqlite3": "^4.0.6"
   }
 }

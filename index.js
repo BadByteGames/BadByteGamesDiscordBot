@@ -1,7 +1,20 @@
 //required libraries
 const Discord = require("discord.js");
 const sqlite3 = require('sqlite3').verbose();
+const express = require('express');
+const session = require('express-session');
+const nunjucks = require('nunjucks');
+
 const userdatabase = new sqlite3.Database('userdata');
+const app = express();
+
+app.use(session({
+    secret: 'shut up about it',
+    resave: true,
+    saveUninitialized: true,
+    maxAge: 60 * 60 * 1000 // 1 hour
+}));
+
 //includes the minesweeper generator
 const MineSweeper = require("./minesweeper");
 //token file that stores bot token
@@ -73,6 +86,85 @@ var getBlarts = async function(user, channel){
         }
     });
 }
+
+// Authentication and Authorization Middleware
+var auth = function(req, res, next) {
+    if (req.session && req.session.user === "admin" && req.session.admin)
+        return next();
+    else
+        return res.redirect('/');
+};
+
+//GET index
+app.get(['/', '/index.html', '/index'], function (req, res) {
+    //render the login page
+    if(!req.query.username || !req.query.password){
+        res.send(nunjucks.render('./views/index.html', {message :''}));
+    }else if(req.query.username === "admin" && req.query.password === Token.password) {
+        req.session.user = "admin";
+        req.session.admin = true;
+        res.redirect('admin_panel');
+    }else{
+        res.send(nunjucks.render('./views/index.html', {message :'Either your username or password was incorrect!'}));
+    }
+});
+
+//get the admin panel
+app.get(['/admin_panel','/admin_panel.html'], auth, function(req, res){
+    if(!req.query.sql){
+        //render the admin page if no sql command is given
+        res.send(nunjucks.render('./views/admin_panel.html', {sqlmessage: ''}));
+    }else{
+        //run the sql command then render the admin_panel
+        userdatabase.all(req.query.sql, function(err, rows){
+            var content = '';
+
+            if(err){
+                content += err.message;
+                content += '\n';
+            }
+
+            if(rows != null && rows != undefined && rows.length >= 1){
+                content += JSON.stringify(rows);
+                content += '\n';
+            }
+
+            if(content === ''){
+                res.send(nunjucks.render('./views/admin_panel.html', {sqlmessage: 'Your command has been run!'}));
+            }else{
+                res.send(nunjucks.render('./views/admin_panel.html', {sqlmessage: content}));
+            }
+        });
+    }
+});
+
+// Logout endpoint
+app.get('/logout', function (req, res) {
+    req.session.destroy();
+    res.redirect("/");
+});
+
+//404 page
+app.use(function(req, res, next){
+    res.status(404);
+  
+    // respond with html page
+    if (req.accepts('html')) {
+      res.send(nunjucks.render('./views/notfound.html', { url: req.url }));
+      return;
+    }
+  
+    // respond with json
+    if (req.accepts('json')) {
+      res.send({ error: 'Not found' });
+      return;
+    }
+  
+    // default to plain-text. send()
+    res.type('txt').send('Not found');
+});
+
+app.listen(3000);
 
 //add events
 client.on('ready', () => {

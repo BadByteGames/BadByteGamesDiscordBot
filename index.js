@@ -4,6 +4,7 @@ const sqlite3 = require('sqlite3').verbose();
 const express = require('express');
 const session = require('express-session');
 const nunjucks = require('nunjucks');
+const shortid = require('shortid');
 
 const userdatabase = new sqlite3.Database('userdata');
 const app = express();
@@ -26,6 +27,9 @@ const client = new Discord.Client();
 //important variables of knowledge
 var sayIt = false;
 var message = "";
+
+//store ongoing lotteries
+var lotteries = {};
 
 //finds a role id from a discord server and returns the role object
 var findRole = function (guild, name){
@@ -604,17 +608,17 @@ client.on('message', async clientMessage => {
 
             if(user != null){
                 if(user.bot){
-                    sendFormatted(clientMessage.channel, `${user.username} has infinite blarts!`);
+                    sendFormatted(clientMessage.channel, `:credit_card: ${user.username} has infinite blarts!`);
                 }else{
                     var blarts = await getBlarts(user);
-                    sendFormatted(clientMessage.channel, `${user.username} has ${blarts} blarts!`);
+                    sendFormatted(clientMessage.channel, `:credit_card: ${user.username} has ${blarts} blarts!`);
                 }
             }else{
                 sendFormatted(clientMessage.channel, `:x: Failed to find a user called ${name}!`);
             }
         }else{
            var blarts = await getBlarts(clientMessage.author);
-           sendFormatted(clientMessage.channel, `You have ${blarts} blarts!`);
+           sendFormatted(clientMessage.channel, `:credit_card: You have ${blarts} blarts!`);
         }
     }else if(command === "betmyblarts"){
         if(args.length >= 2){
@@ -645,6 +649,97 @@ client.on('message', async clientMessage => {
             }
         }else{
             sendFormatted(clientMessage.channel, ':x: You need to specify how many blarts to bet!');
+        }
+    }else if(command === "lottery"){
+        if(args.length >= 4){
+            //the user bet their blarts that vegas has bees
+            if(!isNaN(args[1]) && !isNaN(args[2]) && !isNaN(args[3])){
+                var time = Math.floor(parseInt(args[1]));
+                var minbet = Math.floor(parseInt(args[2]));
+                var maxbet = Math.floor(parseInt(args[3]));
+                if(time <= 0 || time > 15){
+                    sendFormatted(clientMessage.channel, ':x: You need to specify a time between 1 and 15!');
+                }else if(minbet <= 0){
+                    sendFormatted(clientMessage.channel, ':x: You need to specify a minbet above 0!');
+                }else if(maxbet <= minbet){
+                    sendFormatted(clientMessage.channel, ':x: You need to specify a maxbet above the minbet!');
+                }else{
+                    //generate a uuid for the lottery
+                    var lotteryId = shortid.generate();
+                    sendFormatted(clientMessage.channel, `:ticket: Type \`--joinlottery ${lotteryId} <blarts>\` to join the lottery`);
+                    const filter = m => { return m.content.startsWith(`--joinlottery ${lotteryId}`);}
+                    const collector = clientMessage.channel.createMessageCollector(filter, { time: time * 60 * 1000 });
+
+                    lotteries[lotteryId] = new Object();
+
+                    collector.on('collect', async m => {
+                        //parse if the individual joined the lottery and they aren't already in it
+                        var args = m.content.split(" ");
+                        if(args.length < 3){
+                            sendFormatted(clientMessage.channel, ':x: You need to specify how many blarts you are investing!');
+                        }else if(lotteries[lotteryId][m.author.id]){
+                            sendFormatted(clientMessage.channel, ':x: You are already in the lottery!');
+                        }else{
+                            if(!isNaN(args[2])){
+                                var blartNum = Math.floor(parseInt(args[2]));
+
+                                var userblarts = await getBlarts(m.author);
+                                if(blartNum < minbet || blartNum > maxbet){
+                                    sendFormatted(clientMessage.channel, ':x: You need to specify an amount in the bet range!');
+                                }else if(blartNum > userblarts){
+                                    sendFormatted(clientMessage.channel, ':x: You don\'t have that many blarts to bet!');
+                                }else{
+                                    //join the lottery with blartNum lots
+                                    lotteries[lotteryId][m.author.id] = blartNum;
+
+                                    sendFormatted(clientMessage.channel, `:ticket: You joined the lottery with ${blartNum} blarts!`);
+
+                                    //update their blarts
+                                    setBlarts(m.author, userblarts - blartNum);
+                                }
+                            }else{
+                                sendFormatted(clientMessage.channel, ':x: You need to specify a number!');
+                            }
+                        }
+                    });
+
+                    collector.on('end', async collected =>{
+                        //calculate the winner
+                        var members = lotteries[lotteryId];
+
+                        if(Object.keys(members).length >= 1){
+                            var lots = [];
+
+                            for(var member in members){
+                                //add one lot for every blart
+                                for(var i = 0; i < members[member]; i++){
+                                    lots.push(member);
+                                }
+                            }
+
+                            //choose a random lot to win
+                            var winner = lots[Math.floor(Math.random()*lots.length)];
+
+                            //get the discord user
+                            var winnerUser = client.users.find( val => val.id === winner);
+                            sendFormatted(clientMessage.channel, `:ticket: ${winnerUser.username} won lottery ${lotteryId} with the jackpot of ${lots.length}!`);
+
+                            var userblarts = await getBlarts(winnerUser);
+
+                            setBlarts(winnerUser, userblarts + lots.length);
+                        }else{
+                            sendFormatted(clientMessage.channel, `:ticket: Lottery ${lotteryId} over but no users joined!`);
+                        }
+                        
+                        //empty that lotteryId
+                        lotteries[lotteryId] = null;
+                    });
+                }
+            }else{
+                sendFormatted(clientMessage.channel, ':x: You need to specify a number!');
+            }
+        }else{
+            sendFormatted(clientMessage.channel, ':x: You need to specify how long the lottery will be, the minimum bet and the maximum bet!');
         }
     }
 

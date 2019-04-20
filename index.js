@@ -628,25 +628,13 @@ client.on('message', async clientMessage => {
                 }else if(blartNum > userblarts){
                     sendFormatted(clientMessage.channel, ':x: You don\'t have that many blarts to bet!');
                 }else{
-                    //flip a coin if 1-50 and have another coin toss for every 25 after
-                    if(blartNum <= 50){
-                        if(Math.floor(Math.random()*2) === 1){
-                            userblarts += blartNum;
-                            sendFormatted(clientMessage.channel, `:game_die: You bet your blarts that vegas had bees and won. Current balance: ${userblarts}`);
-                        }else{
-                            userblarts -= blartNum;
-                            sendFormatted(clientMessage.channel, `:game_die: You bet your blarts but vegas did not have bees. Current balance: ${userblarts}`);
-                        }
+                    //flip a coin to determine their victory
+                    if(Math.floor(Math.random()*2) === 1){
+                        userblarts += blartNum;
+                        sendFormatted(clientMessage.channel, `:game_die: You bet your blarts that vegas had bees and won. Current balance: ${userblarts}`);
                     }else{
-                        //lower their chances for getting to cocky
-                        var cointoss = Math.floor(blartNum / 25) - 2;
-                        if(Math.floor(Math.random()*Math.pow(2, cointoss)) === 1){
-                            userblarts += blartNum;
-                            sendFormatted(clientMessage.channel, `:game_die: You bet your blarts that vegas had bees and won. Current balance: ${userblarts}`);
-                        }else{
-                            userblarts -= blartNum;
-                            sendFormatted(clientMessage.channel, `:game_die: You bet your blarts but vegas did not have bees. Current balance: ${userblarts}`);
-                        }
+                        userblarts -= blartNum;
+                        sendFormatted(clientMessage.channel, `:game_die: You bet your blarts but vegas did not have bees. Current balance: ${userblarts}`);
                     }
 
                     //update their blarts

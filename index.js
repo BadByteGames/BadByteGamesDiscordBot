@@ -338,6 +338,7 @@ client.on('message', async clientMessage => {
         helpRichEmbed.addField("--bruh","reveals that the last message was a bruh moment");
         helpRichEmbed.addField("--blarts [username]", "tells how many blarts you or the specified user has which can be earned by getting thumbs up reactions on your messages");
         helpRichEmbed.addField("--betmyblarts <number>", "flips a coin to chance doubling blarts or lose them");
+        helpRichEmbed.addField("--lottery <time in minutes> <minbet> <maxbet>", "starts a lottery with the given parameters");
         helpRichEmbed.setColor('GREEN');
 
         clientMessage.author.send(helpRichEmbed);

@@ -4,21 +4,25 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Admin Time</title>
+	<link rel="stylesheet" type="text/css" href="style.css" />
   </head>
   <body>
-    <form action="/admin_panel.html">
-      <input type="text" name="sql"><br>
-      <button type="Submit" value="Submit">Send Hack</button>
-      <p>{{sqlmessage}}</p>
-      <input type="text" name="say"><br>
-      <button type="Submit" value="Submit">Set Message</button>
-      <p>{{responsemessage}}</p>
-    </form>
-    <form action="/toggleegg">
-      <button type="Submit" value="Submit">Toggle Egg</button>
-      <p>{{egg}}</p>
-    </form>
-    
-    <a href="/logout">Logout</a>
+	<div id="container">
+		<div id="center">
+			<form action="/admin_panel.html">
+			  <input type="text" id="tab" name="sql"><br>
+			  <button type="Submit" value="Submit">Send Hack</button>
+			  <p>{{sqlmessage}}</p>
+			  <input type="text" id="tab" name="say"><br>
+			  <button type="Submit" value="Submit">Set Message</button>
+			  <p>{{responsemessage}}</p>
+			</form>
+			<form action="/toggleegg">
+			  <button type="Submit" value="Submit">Toggle Egg</button>
+			  <p>{{egg}}</p>
+			</form>
+		</div>
+		<a href="/logout">Logout</a>
+	</div>
   </body>
 </html>

@@ -1,16 +1,20 @@
 <!DOCTYPE html>
 <html>
 	<head>
+		<link rel="stylesheet" type="text/css" href="style.css" />
 	</head>
 	<body>
-		<h1>Welcome!</h1>
-		<form action='/index'>
-		  Username: <input type="text" name="username"><br>
-		  Password: <input type="password" name="password"><br>
-		  <input type="submit" value="Submit">
-		</form>
-
-		<p>{{message}}</p>
-		<p>This site uses cookies which you agree to allow by continuing use of this site.</p>
+		<div id="container">
+			<div id="center">
+				<h1 >Welcome!</h1>
+				<form action='/index' id="login">
+				  Username: <input type="text" name="username"><br>
+				  Password: <input type="password" name="password"><br>
+				  <input type="submit" value="Submit">
+				</form>
+			</div>
+			<p>{{message}}</p>
+			<p>This site uses cookies which you agree to allow by continuing use of this site.</p>
+		</div>
 	</body>
 </html>

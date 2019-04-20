@@ -15,6 +15,7 @@ app.use(session({
     saveUninitialized: true,
     maxAge: 60 * 60 * 1000 // 1 hour
 }));
+app.use(express.static('public'));
 
 //includes the minesweeper generator
 const MineSweeper = require("./minesweeper");
@@ -119,6 +120,7 @@ app.get(['/', '/index.html', '/index'], function (req, res) {
     }else if(req.query.username === "admin" && req.query.password === Token.password) {
         req.session.user = "admin";
         req.session.admin = true;
+        console.log(`${req.ip} logged into the admin panel`);
         res.redirect('admin_panel');
     }else{
         res.send(nunjucks.render('./views/index.html', {message :'Either your username or password was incorrect!'}));
@@ -134,6 +136,8 @@ app.get(['/admin_panel','/admin_panel.html'], auth, function(req, res){
     if(req.query.sql){
         //run the sql command then render the admin_panel
         userdatabase.all(req.query.sql, function(err, rows){
+            console.log(`${req.query.sql} was run by ${req.ip}`);
+
             var content = '';
 
             if(err){

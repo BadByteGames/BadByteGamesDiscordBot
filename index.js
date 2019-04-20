@@ -217,7 +217,7 @@ client.on('guildMemberAdd', member => {
 client.on('messageReactionAdd', async (reaction, user) =>{
     var time = (client.readyTimestamp + client.uptime) - reaction.message.createdTimestamp;
 
-    if(reaction.emoji.name === '👍' && user != reaction.message.author && time < 1000 * 60 * 60 && !reaction.message.author.bot){
+    if(reaction.emoji.name === '👍' && user != reaction.message.author && time < 1000 * 60 * 60 && !reaction.message.author.bot && !user.bot){
         //give them a blart
         var blarts = await getBlarts(reaction.message.author) + 1;
 
@@ -228,7 +228,7 @@ client.on('messageReactionAdd', async (reaction, user) =>{
 client.on('messageReactionRemove', async (reaction, user) =>{
     var time = (client.readyTimestamp + client.uptime) - reaction.message.createdTimestamp;
 
-    if(reaction.emoji.name === '👍' && user != reaction.message.author && time < 1000 * 60 * 60 && !reaction.message.author.bot){
+    if(reaction.emoji.name === '👍' && user != reaction.message.author && time < 1000 * 60 * 60 && !reaction.message.author.bot && !user.bot){
         //take away a blart
         var blarts = await getBlarts(reaction.message.author) - 1;
 

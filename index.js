@@ -205,6 +205,30 @@ client.on('guildMemberAdd', member => {
     member.addRole(streamRole);
 });
 
+//handle upvotes if the message isn't older than 1 hour
+client.on('messageReactionAdd', async (reaction, user) =>{
+    var time = (client.readyTimestamp + client.uptime) - reaction.message.createdTimestamp;
+
+    if(reaction.emoji.name === '👍' && user != reaction.message.author && time < 1000 * 60 * 60 && !reaction.message.author.bot){
+        //give them a blart
+        var blarts = await getBlarts(reaction.message.author) + 1;
+
+        setBlarts(reaction.message.author, blarts);
+    }
+});
+
+client.on('messageReactionRemove', async (reaction, user) =>{
+    var time = (client.readyTimestamp + client.uptime) - reaction.message.createdTimestamp;
+
+    if(reaction.emoji.name === '👍' && user != reaction.message.author && time < 1000 * 60 * 60 && !reaction.message.author.bot){
+        //take away a blart
+        var blarts = await getBlarts(reaction.message.author) - 1;
+
+        setBlarts(reaction.message.author, blarts);
+    }
+});
+
+//command handling
 client.on('message', async clientMessage => {
     if(clientMessage.author.bot || clientMessage.channel.type != 'text')
         return;
@@ -308,9 +332,8 @@ client.on('message', async clientMessage => {
         helpRichEmbed.addField("--minesweeper [rows] [columns] [mines]","generates a spoiler-tag base game of minesweeper");
         helpRichEmbed.addField("--phil","Dr. Phil");
         helpRichEmbed.addField("--bruh","reveals that the last message was a bruh moment");
-        helpRichEmbed.addField("--blarts [username]", "tells how many blarts you or the specified user has");
+        helpRichEmbed.addField("--blarts [username]", "tells how many blarts you or the specified user has which can be earned by getting thumbs up reactions on your messages");
         helpRichEmbed.addField("--betmyblarts <number>", "flips a coin to chance doubling blarts or lose them");
-        helpRichEmbed.addField("--generateblarts", "gives you a blart if you're broke but the command might be removed later when blart debt camp is implemented");
         helpRichEmbed.setColor('GREEN');
 
         clientMessage.author.send(helpRichEmbed);
@@ -634,12 +657,6 @@ client.on('message', async clientMessage => {
             }
         }else{
             sendFormatted(clientMessage.channel, ':x: You need to specify how many blarts to bet!');
-        }
-    }else if(command === "generateblarts"){
-        var userBlarts = await getBlarts(clientMessage.author);
-        if(userBlarts <= 0){
-            clientMessage.channel.send("Fine faggot, have a blart but I won't be doing this forever.");
-            setBlarts(clientMessage.author, 1);
         }
     }
 

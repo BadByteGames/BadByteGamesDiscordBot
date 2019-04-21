@@ -343,6 +343,7 @@ client.on('message', async clientMessage => {
         helpRichEmbed.addField("--blarts [username]", "tells how many blarts you or the specified user has which can be earned by getting thumbs up reactions on your messages");
         helpRichEmbed.addField("--betmyblarts <number>", "flips a coin to chance doubling blarts or lose them");
         helpRichEmbed.addField("--lottery <time in minutes> <minbet> <maxbet>", "starts a lottery with the given parameters");
+        helpRichEmbed.addField("--giveblarts <amount> <user>", "pays the specified user the specified amount from your blart stash");
         helpRichEmbed.setColor('GREEN');
 
         clientMessage.author.send(helpRichEmbed);
@@ -745,6 +746,48 @@ client.on('message', async clientMessage => {
             }
         }else{
             sendFormatted(clientMessage.channel, ':x: You need to specify how long the lottery will be, the minimum bet and the maximum bet!');
+        }
+    }else if(command === "giveblarts"){
+        if(args.length >= 3){
+            if(!isNaN(args[1])){
+                //pay a user blarts
+                var name = args.splice(2).join(" ");
+                var guildmembers = await clientMessage.guild.members;
+                var guildmember = guildmembers.find( val => val.user.username === name);
+                var user = guildmember != null ? guildmember.user : null;
+
+                var blartsToGive = Math.floor(parseInt(args[1]));
+
+                var donorBlarts = await getBlarts(clientMessage.author);
+
+                var recieverBlarts = await getBlarts(user);
+
+                if(user != null){
+                    if(user.bot){
+                        sendFormatted(clientMessage.channel, `:x:You can't give a bot blarts!`);
+                    }else{
+                        if(blartsToGive > donorBlarts){
+                            sendFormatted(clientMessage.channel, ':x: You don\'t have that many blarts to give!');
+                        }else if(blartsToGive <= 0){
+                            sendFormatted(clientMessage.channel, ':x: You need to specify at least 1 blart!');
+                        }else{
+                            //complete the transaction
+                            donorBlarts -= blartsToGive;
+                            recieverBlarts += blartsToGive;
+
+                            setBlarts(clientMessage.author, donorBlarts);
+                            setBlarts(user, recieverBlarts);
+                            sendFormatted(clientMessage.channel, `:credit_card: Transaction authorized.\n${clientMessage.author.username}\'s balance: ${donorBlarts}\n${user.username}\'s balance: ${recieverBlarts}`);
+                        }
+                    }
+                }else{
+                    sendFormatted(clientMessage.channel, `:x: Failed to find a user called ${name}!`);
+                }
+            }else{
+                sendFormatted(clientMessage.channel, `:x: You need to specify a numeric amount of blarts!`);
+            }
+        }else{
+            sendFormatted(clientMessage.channel, `:x: You need to specify an amount and an username!`);
         }
     }
 

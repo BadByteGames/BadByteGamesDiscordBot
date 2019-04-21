@@ -6,7 +6,7 @@ body {
   padding: 8px 10px;
   font-size: 18px;
   margin: 0;
-  background-color: rgb(120, 120, 120);
+  background-color: rgb(24, 26, 27);
 }
 
 #container {
@@ -29,4 +29,8 @@ body {
 	margin-left: auto;
 	margin-right: auto;
 	text-align: center;
+}
+
+#eatturd {
+	font-size: 150px;
 }

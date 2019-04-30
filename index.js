@@ -32,6 +32,9 @@ var message = "";
 //store ongoing lotteries
 var lotteries = {};
 
+//store ongoing poker games (might add them)
+var pokerGames = {};
+
 //finds a role id from a discord server and returns the role object
 var findRole = function (guild, name){
     var role = null;
@@ -40,17 +43,33 @@ var findRole = function (guild, name){
 }
 
 //sends a formatted message to said channel
-var sendFormatted = function(channel, message){
-    var richEmbed = new Discord.RichEmbed();
-     //change to error if too long
-     if(message.length >= 256){
-        richEmbed.setTitle(`:x: One or more of the arguments was too long!`);
-    }else{
-        richEmbed.setTitle(message);
+var sendFormatted = async function(channel, message){
+    return new Promise(async function(resolve, reject){
+        var richEmbed = new Discord.RichEmbed();
+        //change to error if too long
+        if(message.length >= 256){
+            richEmbed.setTitle(`:x: One or more of the arguments was too long!`);
+        }else{
+            richEmbed.setTitle(message);
+        }
+        richEmbed.setColor('GREEN');
+    
+        var returnMessage = await channel.send(richEmbed);
+        resolve(returnMessage);
+    });
+}
+
+//generates a random deck from decks# deck
+var generateDeck = function(decks){
+    var baseSuit = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
+
+    var deck = [];
+
+    for(var i = 0; i < (decks * 4); i++){
+        deck = deck.concat(baseSuit);
     }
-    richEmbed.setColor('GREEN');
-   
-    channel.send(richEmbed);
+    
+    return deck;
 }
 
 //validate the sql table and create it if necessary
@@ -323,6 +342,18 @@ client.on('message', async clientMessage => {
 
     //generate arguments list
     const args = msg.substring(2).split(" ");
+
+    //remove any args that are null
+    for(var arg = 0; arg < args.length; arg++){
+        if(args[arg] === ''){
+            //remove the argument
+            args.splice(arg, 1);
+
+            //restart
+            arg = 0;
+        }
+    }
+
     const command = args[0];
 
     if(command === "help"){
@@ -344,6 +375,7 @@ client.on('message', async clientMessage => {
         helpRichEmbed.addField("--betmyblarts <number>", "flips a coin to chance doubling blarts or lose them");
         helpRichEmbed.addField("--lottery <time in minutes> <minbet> <maxbet>", "starts a lottery with the given parameters");
         helpRichEmbed.addField("--giveblarts <amount> <user>", "pays the specified user the specified amount from your blart stash");
+        helpRichEmbed.addField("--blackjack <number>", "starts a round of blackjack with the number of blarts as your bet");
         helpRichEmbed.setColor('GREEN');
 
         clientMessage.author.send(helpRichEmbed);
@@ -680,14 +712,14 @@ client.on('message', async clientMessage => {
 
                     collector.on('collect', async m => {
                         //parse if the individual joined the lottery and they aren't already in it
-                        var args = m.content.split(" ");
-                        if(args.length < 3){
+                        var lotteryArgs = m.content.split(" ");
+                        if(lotteryArgs.length < 3){
                             sendFormatted(clientMessage.channel, ':x: You need to specify how many blarts you are investing!');
                         }else if(lotteries[lotteryId][m.author.id]){
                             sendFormatted(clientMessage.channel, ':x: You are already in the lottery!');
                         }else{
-                            if(!isNaN(args[2])){
-                                var blartNum = Math.floor(parseInt(args[2]));
+                            if(!isNaN(lotteryArgs[2])){
+                                var blartNum = Math.floor(parseInt(lotteryArgs[2]));
 
                                 var userblarts = await getBlarts(m.author);
                                 if(blartNum < minbet || blartNum > maxbet){
@@ -760,9 +792,9 @@ client.on('message', async clientMessage => {
 
                 var donorBlarts = await getBlarts(clientMessage.author);
 
-                var recieverBlarts = await getBlarts(user);
-
                 if(user != null){
+                    var recieverBlarts = await getBlarts(user);
+
                     if(user.bot){
                         sendFormatted(clientMessage.channel, `:x:You can't give a bot blarts!`);
                     }else{
@@ -788,6 +820,238 @@ client.on('message', async clientMessage => {
             }
         }else{
             sendFormatted(clientMessage.channel, `:x: You need to specify an amount and an username!`);
+        }
+    }else if(command === "blackjack"){
+        //get the starting bets for the session
+        if(args.length >= 2){
+            if(!isNaN(args[1])){
+                var betNum = Math.floor(parseInt(args[1]));
+
+                var userBlarts = await getBlarts(clientMessage.author);
+
+                if(betNum <= 0){
+                    sendFormatted(clientMessage.channel, `:x: You need to specify 1 or more blarts!`);
+                }else if(betNum > userBlarts){
+                    sendFormatted(clientMessage.channel, `:x: You can't specify more blarts than what you have!`);
+                }else{
+                    //start the round by deducting blarts from the user account
+                    userBlarts -= betNum;
+                    await setBlarts(clientMessage.author, userBlarts);
+
+                    //start a black jack round collector
+                    const blackjackFilter = m => {return m.author === clientMessage.author && m.content.startsWith("--");};
+                    const blackjackCollector = clientMessage.channel.createMessageCollector(blackjackFilter, {time: 5 * 60 * 1000});
+
+                    var deck = generateDeck(6);
+
+                    var hand = [];
+
+                    //deal two cards to the user
+                    var deckIndex = Math.floor(Math.random()*deck.length);
+                    hand.push(deck[deckIndex]);
+                    deck.splice(deckIndex, 1);
+
+                    deckIndex = Math.floor(Math.random()*deck.length);
+                    hand.push(deck[deckIndex]);
+                    deck.splice(deckIndex, 1);
+
+
+                    var dealerHand = [];
+                    deckIndex = Math.floor(Math.random()*deck.length);
+                    dealerHand.push(deck[deckIndex]);
+                    deck.splice(deckIndex, 1);
+
+                    deckIndex = Math.floor(Math.random()*deck.length);
+                    var hiddenDealerCard = deck[deckIndex];
+                    deck.splice(deckIndex, 1);
+
+                    //create a rich embed of the game
+                    var richEmbed = new Discord.RichEmbed();
+
+                    richEmbed.setTitle(`Current Game:`);
+                    richEmbed.addField(`Your Hand:`,`${hand[0]} ${hand[1]}`);
+                    richEmbed.addField(`Dealer Hand:`,`? ${dealerHand[0]}`);
+                    richEmbed.addField(`Your Bet:`,`${betNum}`);
+                    richEmbed.addField(`Actions:`,`You can \`--double\`, \`--hit\`, \`--stand\`, or \`--surrender\``);
+
+                    richEmbed.setColor('GREEN');
+                
+                    clientMessage.channel.send(richEmbed);
+
+                    var endedNormally = false;
+                    var surrendered = false;
+
+                    var calculateHandValue = function(hand){
+                        //calculate individual values of cards
+                        var aces = 0;
+
+                        var handValue = 0;
+
+                        //calculate hand value without aces
+                        for(var card in hand){
+                            var cardValue = hand[card];
+
+                            if(cardValue === 'K' || cardValue === 'Q' || cardValue === 'J'){
+                                handValue += 10;
+                            }else if(cardValue === 'A'){
+                                aces += 1;
+                            }else{
+                                handValue += parseInt(cardValue);
+                            }
+                        }
+
+                        //factor in the aces
+                        while(aces != 0){
+                            if(handValue + 11 <= 21){
+                                handValue += 11;
+                            }else{
+                                handValue += 1;
+                            }
+
+                            aces -= 1;
+                        }
+
+                        return handValue;
+                    }
+
+                    blackjackCollector.on('collect', async m=>{
+                        if(m.content==="--hit"){
+                            //draw a card
+                            deckIndex = Math.floor(Math.random()*deck.length);
+
+                            hand.push(deck[deckIndex]);
+                            await sendFormatted(clientMessage.channel, `You drew: ${deck[deckIndex]}`);
+
+                            deck.splice(deckIndex, 1);
+
+                            //calculate if they went bust
+                            if(calculateHandValue(hand) > 21){
+                                endedNormally = true;
+
+                                await sendFormatted(clientMessage.channel, `You went bust!`);
+                                blackjackCollector.stop();
+                            }
+                        }else if(m.content==="--stand"){
+                            endedNormally = true;
+                            blackjackCollector.stop();
+                        }else if(m.content==="--surrender"){
+                            if(dealerHand[0] === 'A'){
+                                if(hand.length === 2){
+                                    surrendered = true;
+                                    endedNormally = true;
+
+                                    //return half their blarts
+                                    userBlarts = await getBlarts(clientMessage.author);
+                                    userBlarts += Math.floor(betNum/2);
+                                    await setBlarts(clientMessage.author, userBlarts);
+                                    
+                                    await sendFormatted(clientMessage.channel, `You surrendered and were returned half your wager.`);
+                                    blackjackCollector.stop();
+                                }else{
+                                    sendFormatted(clientMessage.channel, `:x: You may only surrender after you've just been dealt!`);
+                                }
+                            }else{
+                                sendFormatted(clientMessage.channel, `:x: You may only surrender if the dealer's face up card is an ace!`);
+                            }
+                            
+                        }else if(m.content==="--double"){
+                            if(hand.length === 2 && calculateHandValue(hand) <= 11){
+                                //charge them for doubling
+                                userBlarts = await getBlarts(clientMessage.author);
+                                userBlarts -= betNum;
+                                await setBlarts(clientMessage.author, userBlarts);
+                                betNum *= 2;
+
+                                //draw a card
+                                deckIndex = Math.floor(Math.random()*deck.length);
+
+                                hand.push(deck[deckIndex]);
+                                await sendFormatted(clientMessage.channel, `You drew: ${deck[deckIndex]}`);
+
+                                deck.splice(deckIndex, 1);
+
+                                //calculate if they went bust
+                                if(calculateHandValue(hand) > 21){
+                                    await sendFormatted(clientMessage.channel, `You went bust!`);
+                                }
+
+                                endedNormally = true;
+                                blackjackCollector.stop();
+                            }else{
+                                sendFormatted(clientMessage.channel, `:x: You may only double after you've just been dealt and have a hand value of 11 or less!`);
+                            }
+                            
+                        }
+                    });
+
+                    blackjackCollector.on('end', async collected=>{
+                        if(endedNormally){
+                            if(!surrendered){
+                                var reward = 0;
+
+                                //the dealer takes his turn if the user hasn't busted
+                                if(calculateHandValue(hand) > 21){
+                                    //lose
+                                    reward = 0;
+                                }else{
+                                    await sendFormatted(clientMessage.channel, `The dealer's face down card was ${hiddenDealerCard}`);
+                                    dealerHand.push(hiddenDealerCard);
+
+                                    var dealerBusted = false;
+                                    while(calculateHandValue(dealerHand) < 17){
+                                        //draw a card while the dealer's hand has less than a value of 17
+                                        deckIndex = Math.floor(Math.random()*deck.length);
+
+                                        dealerHand.push(deck[deckIndex]);
+                                        await sendFormatted(clientMessage.channel, `Dealer drew: ${deck[deckIndex]}`);
+
+                                        deck.splice(deckIndex, 1);
+
+                                        //calculate if they went bust
+                                        if(calculateHandValue(dealerHand) > 21){
+                                            await sendFormatted(clientMessage.channel, `The dealer went bust!`);
+                                            dealerBusted = true;
+                                        }
+                                    }
+
+                                    if(!dealerBusted && calculateHandValue(dealerHand) > calculateHandValue(hand)){
+                                        //lose
+                                        reward = 0;
+                                    }else if(dealerBusted || calculateHandValue(dealerHand) < calculateHandValue(hand)){
+                                        //win
+                                        reward = 2 * betNum;
+                                    }else{
+                                        //tie so refund
+                                        reward = betNum;
+                                    }
+                                }
+                                
+                                //create a rich embed of the game stats
+                                var richEmbed = new Discord.RichEmbed();
+
+                                richEmbed.setTitle(`Game results:`);
+                                richEmbed.addField(`Your Bet:`,`${betNum}`);
+                                richEmbed.addField(`Your Pay:`,`${reward}`);
+
+                                richEmbed.setColor('GREEN');
+                            
+                                clientMessage.channel.send(richEmbed);
+                                
+                                //give their reward
+                                userBlarts = await getBlarts(clientMessage.author);
+                                userBlarts += reward;
+                                await setBlarts(clientMessage.author, userBlarts);
+                            }
+                        }else{
+                            sendFormatted(clientMessage.channel, 'The game timed out and you lost everything.');
+                        }
+                    });
+                }
+            }else{
+                sendFormatted(clientMessage.channel, `:x: You need to specify a number!`);
+            }
+        }else{
+            sendFormatted(clientMessage.channel, `:x: You need to specify your bet!`);
         }
     }
 
